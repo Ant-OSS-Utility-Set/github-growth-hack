@@ -1,0 +1,14 @@
+{
+  "name": "github-weekly-statistics",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node growth-hack/index.js"
+  },
+  "author": "seeflood",
+  "license": "ISC",
+  "dependencies": {
+    "@octokit/core": "^3.5.1"
+  }
+}
