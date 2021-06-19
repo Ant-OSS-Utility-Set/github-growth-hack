@@ -1,4 +1,4 @@
-# github-growth-hack
+# github-weekly-statistics
 
 A tool to help you do github weekly statistics
 
