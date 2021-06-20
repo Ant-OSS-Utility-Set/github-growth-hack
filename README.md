@@ -14,11 +14,13 @@ git clone https://github.com/seeflood/github-weekly-statistics.git
 ```
 // Modify these parameters as you like
 const token = `Your Token Here`;
-let weeklyReporter = weelyReportFactory(token);
 // since 7 days before
 let since = `2021-06-12T00:32:13Z`;
-// weeklyReporter(owner, repo, since, new_stars, new_contributors, new_folks);
-weeklyReporter("mosn", "mosn", since, 13, 0, 1);
+// Parameters in the repos array:
+// owner, repo, since, new_stars, new_contributors, new_folks
+// Currently the 'new_stars','new_contributors' and 'new_folks' have to be manually counted and put into the code.
+let repos = [
+  ["mosn", "mosn", since, 13, 0, 1],
 ```
 
 2. Run it
@@ -27,8 +29,12 @@ weeklyReporter("mosn", "mosn", since, 13, 0, 1);
 npm test
 ```
 
-3. now you have the weekly report for your community!
+3. Now you have the weekly report for your repositories!
 ![result](result.png)
+Check the generated .csv files:
+![csv](csv.png)
+You can open them with Excel:
+![excel](excel.png)
 
 ## How is the 'score' calculated?
 
@@ -37,6 +43,6 @@ Based on the [formula](http://oss.x-lab.info/github-insight-report-2020.pdf) pro
 
 ## TODO
 
-Currently the 'new_stars','new_contributors' and 'new_folks' are manually counted and put into the code.I will automate it in the future.
+Currently the 'new_stars','new_contributors' and 'new_folks' have to be manually counted and put into the code.I will automate it in the future.
 
 The design of github open-API is so bad that you can't get the diff data of 'star','contributor' and 'folk' easily.
