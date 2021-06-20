@@ -170,7 +170,8 @@ function log(content) {
     console.error(err);
   }
 }
-async function start(repos) {
+async function start(repos, since) {
+  console.log(`From ${since} to Now:`);
   logStart(
     `rank\tscore\tproject\tnew_stars\tnew_contributors\tnew_folks\tnew_pr\tclosed_pr\tnew_issues\tclosed_issues\tpr_comment\tissue_comment`
   );
@@ -182,10 +183,10 @@ async function start(repos) {
     arr[i] = await weeklyReporter(
       repos[i][0],
       repos[i][1],
+      since,
       repos[i][2],
       repos[i][3],
-      repos[i][4],
-      repos[i][5]
+      repos[i][4]
     );
   }
   // sort

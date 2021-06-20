@@ -9,6 +9,7 @@
   "author": "seeflood",
   "license": "ISC",
   "dependencies": {
-    "@octokit/core": "^3.5.1"
+    "@octokit/core": "^3.5.1",
+    "moment": "^2.29.1"
   }
 }
