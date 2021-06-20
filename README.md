@@ -32,7 +32,7 @@ npm test
 
 ## How is the 'score' calculated?
 
-Based on the [work](http://oss.x-lab.info/github-insight-report-2020.pdf) of [open-digger's](https://github.com/X-lab2017/open-digger),but I add a new factor "new_contributors"
+Based on the [formula](http://oss.x-lab.info/github-insight-report-2020.pdf) proposed by [open-digger](https://github.com/X-lab2017/open-digger),but I add a new factor "new_contributors"
 ![how.png](how.png)
 
 ## TODO
