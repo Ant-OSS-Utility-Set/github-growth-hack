@@ -13,19 +13,23 @@ git clone https://github.com/seeflood/github-weekly-statistics.git
 
 ```javascript
 // Modify these parameters as you like
-// 1. Your github API token
-const token = `Your Token Here`;
+// 1. (Optional) Your github API token
+// It's not required unless your repositries are private
+const token = ``;
+
 // 2. Since when?
 // modify it as you like
 // e.g.
 // let since = `2021-06-12T00:32:13Z`;
 let since = utils.lastSaturday();
+
 // 3. Which repositries do you care about?
 // Parameters in the repos array are:
 // owner, repo, new_stars, new_contributors, new_folks
 // Currently the 'new_stars','new_contributors' and 'new_folks' have to be manually counted and put into the code.
 let repos = [
   ["mosn", "mosn", 13, 0, 1],
+  ["sofastack", "sofa-jraft", 5, 1, 3],
 ```
 
 2. Run it
