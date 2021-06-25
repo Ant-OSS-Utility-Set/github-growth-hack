@@ -25,8 +25,8 @@ let since = utils.lastSaturday();
 
 // 3. Which repositries do you care about?
 // Parameters in the repos array are:
-// owner, repo, new_stars, new_contributors, new_folks
-// Currently the 'new_stars','new_contributors' and 'new_folks' have to be manually counted and put into the code.
+// owner, repo, new_stars, new_contributors, new_forks
+// Currently the 'new_stars','new_contributors' and 'new_forks' have to be manually counted and put into the code.
 let repos = [
   ["mosn", "mosn", 13, 0, 1],
   ["sofastack", "sofa-jraft", 5, 1, 3],
@@ -52,6 +52,6 @@ Based on the [formula](http://oss.x-lab.info/github-insight-report-2020.pdf) pro
 
 ## TODO
 
-Currently the 'new_stars','new_contributors' and 'new_folks' have to be manually counted and put into the code.I will automate it in the future.
+Currently the 'new_stars','new_contributors' and 'new_forks' have to be manually counted and put into the code(you can get these diff data from https://vesoft-inc.github.io/github-statistics/ ).I will automate it in the future.
 
-The design of github open-API is so bad that you can't get the diff data of 'star','contributor' and 'folk' easily.
+The design of github open-API is so bad that you can't get the diff data of 'star','contributor' and 'fork' easily.

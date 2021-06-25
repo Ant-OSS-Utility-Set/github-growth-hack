@@ -9,7 +9,7 @@ function weeklyReporter(
   since,
   new_stars,
   new_contributors,
-  new_folks
+  new_forks
 ) {
   let result = {
     issueComment: new Set(),
@@ -110,13 +110,13 @@ function weeklyReporter(
           4 * result.prComment.size +
           2 * result.closePr.size +
           new_stars +
-          2 * new_folks +
+          2 * new_forks +
           5 * new_contributors;
         result.score = score;
         result.repoName = repoName;
         result.new_stars = new_stars;
         result.new_contributors = new_contributors;
-        result.new_folks = new_folks;
+        result.new_forks = new_forks;
         return result;
       })
   );
@@ -173,10 +173,10 @@ function log(content) {
 async function start(repos, since) {
   console.log(`From ${since} to Now:`);
   logStart(
-    `rank\tscore\tproject\tnew_stars\tnew_contributors\tnew_folks\tnew_pr\tclosed_pr\tnew_issues\tclosed_issues\tpr_comment\tissue_comment`
+    `rank\tscore\tproject\tnew_stars\tnew_contributors\tnew_forks\tnew_pr\tclosed_pr\tnew_issues\tclosed_issues\tpr_comment\tissue_comment`
   );
   logStartZh(
-    `排名,活跃度得分,项目,新增star,新增contributor,folk,new_pr,close_pr,new_issues,close_issues,pr_comment,issue_comment`
+    `排名,活跃度得分,项目,新增star,新增contributor,fork,new_pr,close_pr,new_issues,close_issues,pr_comment,issue_comment`
   );
   let arr = [];
   for (let i = 0; i < repos.length; i++) {
@@ -206,7 +206,7 @@ async function start(repos, since) {
       prevRank = rank;
     }
     log(
-      `${rank}\t${result.score}\t${result.repoName}\t${result.new_stars}\t${result.new_contributors}\t${result.new_folks}\t${result.newPr.size}\t${result.closePr.size}\t${result.newIssue.size}\t${result.closeIssue.size}\t${result.prComment.size}\t${result.issueComment.size}`
+      `${rank}\t${result.score}\t${result.repoName}\t${result.new_stars}\t${result.new_contributors}\t${result.new_forks}\t${result.newPr.size}\t${result.closePr.size}\t${result.newIssue.size}\t${result.closeIssue.size}\t${result.prComment.size}\t${result.issueComment.size}`
     );
   }
 }
