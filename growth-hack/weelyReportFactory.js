@@ -1,9 +1,10 @@
 const { Octokit } = require("@octokit/core");
-const fs = require("fs");
+const { logger } = require("./logger");
+const { utils } = require("./utils");
 
 let octokit = null;
 
-function weeklyReporter(
+function collectWeeklyData(
   orgName,
   repoName,
   since,
@@ -21,6 +22,7 @@ function weeklyReporter(
     unknown: new Set(),
   };
   //  1. comment
+  // see https://docs.github.com/en/rest/reference/issues#comments
   const commentResp = octokit.request(
     `GET /repos/{owner}/{repo}/issues/comments?since=${since}`,
     {
@@ -39,18 +41,22 @@ function weeklyReporter(
         let len = r.data.length;
         for (let i = 0; i < len; i++) {
           let d = r.data[i];
+          // no bot
           if (d.user.type == "Bot") {
             continue;
           }
+          // issue comment
           if (d.html_url.indexOf("pull") < 0) {
             result.issueComment.add(d);
           } else {
+            // pr comment
             result.prComment.add(d);
           }
         }
         return result;
       })
       // 2. new/closed issues and pr
+      // see https://docs.github.com/en/rest/reference/issues#list-repository-issues
       // 2.1. request
       .then(function (result) {
         return octokit.request(
@@ -66,6 +72,10 @@ function weeklyReporter(
         let len = r.data.length;
         for (let i = 0; i < len; i++) {
           let d = r.data[i];
+          // no bot
+          if(d.user!=null && d.user.type =="Bot"){
+             continue;
+          }
           // check close
           if (d.closed_at != null) {
             if (isPr(d)) {
@@ -83,11 +93,12 @@ function weeklyReporter(
             }
             continue;
           }
-
+          // too old
           if (d.created_at < since) {
             result.unknown.add(d.number);
             continue;
           }
+          // new pr or issues
           if (isPr(d)) {
             result.newPr.add(d.number);
           } else {
@@ -135,52 +146,19 @@ function weelyReportFactory(token) {
   return start;
 }
 
-function logStart(content) {
-  console.log(content);
-  // write files
-  content = content.replace(/\t/g, ",");
-
-  try {
-    fs.writeFileSync("report.csv", content + "\n");
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-function logStartZh(content) {
-  // write files
-  // need to add BOM header,see
-  // https://www.zhihu.com/question/21869078/answer/350728339
-  try {
-    fs.writeFileSync("report-zh.csv", "\uFEFF" + content + "\n", "utf8");
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-function log(content) {
-  console.log(content);
-  // write files
-  content = content.replace(/\t/g, ",");
-
-  try {
-    fs.appendFileSync("report.csv", content + "\n");
-    fs.appendFileSync("report-zh.csv", content + "\n");
-  } catch (err) {
-    console.error(err);
-  }
-}
-async function start(repos, since) {
+async function start(repos, since, to) {
+  // 1. log Title
   console.log(`From ${since} to Now:`);
-  logStart(
-    `rank\tscore\tproject\tnew_stars\tnew_contributors\tnew_forks\tnew_pr\tclosed_pr\tnew_issues\tclosed_issues\tpr_comment\tissue_comment`
+  logger.logStart(
+    `rank\tscore\tproject\tnew_stars\tnew_contributors\tnew_forks\tnew_pr\tclosed_pr\tnew_issues\tclosed_issues\tpr_comment\tissue_comment\tdate_from\tdate_to\trecord_date`
   );
-  logStartZh(
-    `排名,活跃度得分,项目,新增star,新增contributor,fork,new_pr,close_pr,new_issues,close_issues,pr_comment,issue_comment`
+  logger.logStartZh(
+    `排名,活跃度得分,项目,新增star,新增contributor,fork,new_pr,close_pr,new_issues,close_issues,pr_comment,issue_comment,date_from,date_to,record_date`
   );
+  // 2. collect data and calculate score.
   let arr = [];
   for (let i = 0; i < repos.length; i++) {
-    arr[i] = await weeklyReporter(
+    arr[i] = await collectWeeklyData(
       repos[i][0],
       repos[i][1],
       since,
@@ -189,11 +167,17 @@ async function start(repos, since) {
       repos[i][4]
     );
   }
-  // sort
+  // 3. sort
   arr.sort((a, b) => {
     return b.score - a.score;
   });
-  // log
+  
+  // 4. log data
+  // 4.1. format
+  var sinceReadable = utils.formatWithReadableFormat(since);
+  var toReadable = utils.formatWithReadableFormat(to);
+  var now = utils.nowWithReadableFormat();
+  // 4.2. calculate rank
   let prevScore = arr[0].score;
   let prevRank = 1;
   for (let i = 0; i < arr.length; i++) {
@@ -205,8 +189,9 @@ async function start(repos, since) {
       prevScore = result.score;
       prevRank = rank;
     }
-    log(
-      `${rank}\t${result.score}\t${result.repoName}\t${result.new_stars}\t${result.new_contributors}\t${result.new_forks}\t${result.newPr.size}\t${result.closePr.size}\t${result.newIssue.size}\t${result.closeIssue.size}\t${result.prComment.size}\t${result.issueComment.size}`
+    // 4.3. do logging
+    logger.log(
+      `${rank}\t${result.score}\t${result.repoName}\t${result.new_stars}\t${result.new_contributors}\t${result.new_forks}\t${result.newPr.size}\t${result.closePr.size}\t${result.newIssue.size}\t${result.closeIssue.size}\t${result.prComment.size}\t${result.issueComment.size}\t${sinceReadable}\t${toReadable}\t${now}`
     );
   }
 }
