@@ -25,7 +25,13 @@ function lastSaturday() {
 }
 
 function lastSaturday00_00_00() {
-  return moment().startOf("isoWeek").hour(0).minute(0).second(0).subtract(2, "days").toISOString(true);
+  return moment()
+    .startOf("isoWeek")
+    .hour(0)
+    .minute(0)
+    .second(0)
+    .subtract(2, "days")
+    .toISOString(true);
 }
 
 function lastSunday() {
@@ -36,6 +42,9 @@ function sevenDaysBefore() {
   return moment().subtract(7, "days").toISOString(true);
 }
 
+function today() {
+  return moment().toISOString(true);
+}
 // get now with format 'YYYY-MM-DD HH:mm:ss'
 function nowWithReadableFormat() {
   return moment().format("YYYY-MM-DD HH:mm:ss");
@@ -74,6 +83,7 @@ exports.utils = {
   lastSaturday: lastSaturday,
   lastSunday: lastSunday,
   sevenDaysBefore: sevenDaysBefore,
+  today: today,
   nowWithReadableFormat: nowWithReadableFormat,
   formatWithReadableFormat: formatWithReadableFormat,
   thisSunday: thisSunday,
@@ -81,6 +91,6 @@ exports.utils = {
   thisTuesday: thisTuesday,
   thisFriday: thisFriday,
   thisSaturday: thisSaturday,
-  thisFriday23_59_59:thisFriday23_59_59,
-  lastSaturday00_00_00:lastSaturday00_00_00,
+  thisFriday23_59_59: thisFriday23_59_59,
+  lastSaturday00_00_00: lastSaturday00_00_00,
 };
