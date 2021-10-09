@@ -1,9 +1,21 @@
 # github-weekly-statistics
 
-A tool to help you do github weekly statistics
+A tool to help you do github weekly statistics.
+
+It can:
+- generate a weekly report for the github projects you care about 
+- calculate an "activity score" for every project 
+- use the scores to rank these projects
+
+Screenshots of the reports:
+
+![](grafana.png)
+
+![excel](excel.png)
 
 ## Usage
 
+### Generate Weekly Report as Excel
 0. clone the repo
 ```bash
 git clone https://github.com/seeflood/github-weekly-statistics.git
@@ -44,8 +56,11 @@ Check the generated .csv files:
 ![csv](csv.png)
 You can open them with Excel:
 ![excel](excel.png)
+### Generate Weekly Report as Grafana Dashboard
+// TODO
 
-## How is the 'score' calculated?
+## Rationale
+### How is the 'score' calculated?
 
 Based on the [formula](http://oss.x-lab.info/github-insight-report-2020.pdf) proposed by [open-digger](https://github.com/X-lab2017/open-digger),but I add a new factor "new_contributors"
 ![how.png](how.png)
