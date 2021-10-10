@@ -1,7 +1,7 @@
 const { weelyReportFactory } = require("./weelyReportFactory");
 const { utils } = require("./utils");
 
-// Modify these parameters as you like
+// Modify these configuration items as you like
 // 1. (Optional) Your github API token
 // It's not required unless your repositries are private
 const token = ``;
@@ -42,8 +42,8 @@ let repos = [
   // ["sofastack","sofa-lookout",0,0,0],
 ];
 
-console.log(since)
-console.log(to)
+// console.log(since)
+// console.log(to)
 
 // Let's start
 let start = weelyReportFactory(token);
