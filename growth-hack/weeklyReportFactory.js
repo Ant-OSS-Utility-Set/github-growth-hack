@@ -139,7 +139,7 @@ function isPr(d) {
   return false;
 }
 
-function weelyReportFactory(token) {
+function weeklyReportFactory(token) {
   octokit = new Octokit({
     auth: token,
   });
@@ -195,4 +195,4 @@ async function start(repos, since, to) {
     );
   }
 }
-exports.weelyReportFactory = weelyReportFactory;
+exports.weeklyReportFactory = weeklyReportFactory;

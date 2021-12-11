@@ -51,9 +51,14 @@ function nowWithReadableFormat() {
 }
 
 // convert to 'YYYY-MM-DD HH:mm:ss'
-function formatWithReadableFormat(since) {
-  return moment(since).format("YYYY-MM-DD HH:mm:ss");
+function formatWithReadableFormat(date) {
+  return moment(date).format("YYYY-MM-DD HH:mm:ss");
 }
+
+function formatUTC(date) {
+  return moment.utc(date).format("YYYY-MM-DD HH:mm:ss");
+}
+
 function thisSunday() {
   return moment().day(0).toISOString(true);
 }
@@ -86,6 +91,7 @@ exports.utils = {
   today: today,
   nowWithReadableFormat: nowWithReadableFormat,
   formatWithReadableFormat: formatWithReadableFormat,
+  formatUTC: formatUTC,
   thisSunday: thisSunday,
   thisMonday: thisMonday,
   thisTuesday: thisTuesday,

@@ -47,7 +47,9 @@ let repos = [
 2. Run it
 
 ```bash
-npm test
+# install packages
+npm install
+npm run week
 ```
 
 3. Now you have the weekly report for your repositories!
@@ -99,6 +101,12 @@ Since I deploy MYSQL in alibaba cloud,I use the [DMS Console provided by alibaba
 
 6. Open your Grafana Dashboard:
 ![](grafana.png)
+
+### Generate "Monthly Active Contributors(MAC)"  report as Excel
+
+```bash
+npm run month
+```
 ## Rationale
 ### How is the 'score' calculated?
 
@@ -107,6 +115,8 @@ Based on the [formula](http://oss.x-lab.info/github-insight-report-2020.pdf) pro
 
 ## TODO
 
-Currently the 'new_stars','new_contributors' and 'new_forks' have to be manually counted and put into the code(you can get these diff data from https://vesoft-inc.github.io/github-statistics/ ).I will automate it in the future.
+1. Currently the 'new_stars','new_contributors' and 'new_forks' have to be manually counted and put into the code(you can get these diff data from https://vesoft-inc.github.io/github-statistics/ ).I will automate it in the future.
 
 The design of github open-API is so bad that you can't get the diff data of 'star','contributor' and 'fork' easily.
+
+2. Currently the `pr_comment` number does not include the pr reviews,again due to the shitty github API

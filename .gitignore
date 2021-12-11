@@ -1,3 +1,5 @@
+node_modules/
+report-month.csv
 report-zh.csv
 report.csv
 report-zh的副本.csv
