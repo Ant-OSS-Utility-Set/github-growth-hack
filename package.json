@@ -4,14 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "week": "node growth-hack/index.js",
-    "month": "node growth-hack/index.js month"
+    "week": "node src/index.js",
+    "month": "node src/index.js month"
   },
   "author": "seeflood",
   "license": "ISC",
   "dependencies": {
     "@octokit/core": "^3.5.1",
     "moment": "^2.29.1",
+    "node-fetch": "2.0",
     "request": "^2.81.0"
   }
 }

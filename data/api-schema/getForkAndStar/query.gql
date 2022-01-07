@@ -1,0 +1,22 @@
+query getForkAndStar($owner: String!, $name: String!, $previousStartCursor: String) {
+  repository(owner: $owner, name: $name) {
+    forks(last: 40, before: $previousStartCursor) {
+      pageInfo {
+        startCursor
+        hasPreviousPage
+      }
+      nodes {
+        createdAt
+      }
+    }
+    stargazers(last: 30, before: $previousStartCursor) {
+      pageInfo {
+        startCursor
+        hasPreviousPage
+      }
+      edges {
+        starredAt
+      }
+    }
+  }
+}
