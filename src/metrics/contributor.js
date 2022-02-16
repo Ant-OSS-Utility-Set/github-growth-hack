@@ -1,5 +1,5 @@
 const fs = require("fs");
-const { utils } = require("../utils");
+const { utils } = require("../utils/time_utils");
 const https = require("https");
 const fetch = require("node-fetch");
 const moment = require("moment"); // require

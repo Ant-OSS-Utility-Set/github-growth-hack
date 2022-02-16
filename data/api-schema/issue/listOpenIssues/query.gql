@@ -1,0 +1,34 @@
+query listOpenIssues($owner: String!, $name: String!) {
+  repository(owner: $owner, name: $name) {
+    issues(states: [OPEN], last: 100) {
+      nodes {
+        id
+        repository{
+          name
+        }
+        title
+        url
+        authorAssociation
+        author {
+          login
+        }
+        createdAt
+        comments(last: 30) {
+          nodes {
+            author {
+              login
+            }
+            authorAssociation
+          }
+        }
+      }
+      totalCount
+    }
+    # issue(number:384) {
+    #   id
+    #   author{
+    #     login
+    #   }
+    # }
+  }
+}

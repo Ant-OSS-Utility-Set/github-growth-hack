@@ -1,0 +1,233 @@
+  {
+    url: 'https: //api.github.com/repos/mosn/layotto/issues/214',
+    repository_url: 'https: //api.github.com/repos/mosn/layotto',
+    labels_url: 'https: //api.github.com/repos/mosn/layotto/issues/214/labels{/name}',
+    comments_url: 'https: //api.github.com/repos/mosn/layotto/issues/214/comments',
+    events_url: 'https: //api.github.com/repos/mosn/layotto/issues/214/events',
+    html_url: 'https: //github.com/mosn/layotto/issues/214',
+    id: 1004952769,
+    node_id: 'I_kwDOFZ3wF8475lzB',
+    number: 214,
+    title: '[Proposal
+    ]Secret API design',
+    user: {
+      login: 'MentosL',
+      id: 33775732,
+      node_id: 'MDQ6VXNlcjMzNzc1NzMy',
+      avatar_url: 'https: //avatars.githubusercontent.com/u/33775732?v=4',
+      gravatar_id: '',
+      url: 'https: //api.github.com/users/MentosL',
+      html_url: 'https: //github.com/MentosL',
+      followers_url: 'https: //api.github.com/users/MentosL/followers',
+      following_url: 'https: //api.github.com/users/MentosL/following{/other_user}',
+      gists_url: 'https: //api.github.com/users/MentosL/gists{/gist_id}',
+      starred_url: 'https: //api.github.com/users/MentosL/starred{/owner}{/repo}',
+      subscriptions_url: 'https: //api.github.com/users/MentosL/subscriptions',
+      organizations_url: 'https: //api.github.com/users/MentosL/orgs',
+      repos_url: 'https: //api.github.com/users/MentosL/repos',
+      events_url: 'https: //api.github.com/users/MentosL/events{/privacy}',
+      received_events_url: 'https: //api.github.com/users/MentosL/received_events',
+      type: 'User',
+      site_admin: false
+    },
+    labels: [
+      [Object
+      ],
+      [Object
+      ]
+    ],
+    state: 'closed',
+    locked: false,
+    assignee: null,
+    assignees: [],
+    milestone: null,
+    comments: 18,
+    created_at: '2021-09-23T02: 43: 10Z',
+    updated_at: '2022-02-10T07: 36: 40Z',
+    closed_at: '2022-02-10T07: 36: 40Z',
+    author_association: 'MEMBER',
+    active_lock_reason: null,
+    body: ' Add Layotto secret API. To generate key dependent interface definitions, similar to  [dapr
+    ](https: //docs.dapr.io/developing-applications/building-blocks/secrets/)\r\n' +
+      ' \r\n' +
+      ' English explanation will be added later\r\n' +
+      ' \r\n' +
+      ' # Secret API设计文档\r\n' +
+      ' 本文档讨论"密钥相关"的API\r\n' +
+      ' \r\n' +
+      ' ## 1. 需求\r\n' +
+      ' ### 1.1. 密钥管理\r\n' +
+      ' Q: 为何需要密钥管理？\r\n' +
+      '\r\n' +
+      ' A: 应用程序在执行过程中大多数会使用专门的密钥去访问外部服务，通常需要建议一个对应的密钥存储来管理。\r\n' +
+      '  \r\n' +
+      ' Q: Layotto Secret API充当的角色？\r\n' +
+      '\r\n' +
+      ' A: 提供管理密钥以及允许开发人员通过API获得密钥的功能，充当密钥管理者角色。\r\n' +
+      '  \r\n' +
+      ' ## 2. 产品调研\r\n' +
+      ' | 平台方  | 提供功能  |\r\n' +
+      ' |--|--|\r\n' +
+      ' |dapr|访问权限（可依赖各自云产品支持），密钥管理，检索密钥|\r\n' +
+      ' |云密钥产品相关|访问权限，密钥管理，检索密钥|\r\n' +
+      ' \r\n' +
+      ' ## 3. grpc API设计\r\n' +
+      ' 在制定对应API时，需要考虑每个密钥的唯一资源定位因素有哪些？\r\n' +
+      '\r\n' +
+      '* 存放空间地址\r\n' +
+      '* 密钥对应名称\r\n' +
+      '* 密钥对应版本\r\n' +
+      '* 密钥对应状态\r\n' +
+      '\r\n' +
+      '&emsp;&emsp;其中最为主要的则是前两个。版本默认latest，而状态则默认取生效，如没有生效的密钥，则需要业务去判断下一步操作。\r\n' +
+      '\r\n' +
+      ' ### 3.1. proto定义\r\n' +
+      '```proto\r\n' +
+      ' // Gets secrets from secret stores.\r\n' +
+      '  rpc GetSecret(GetSecretRequest) returns (GetSecretResponse) {}\r\n' +
+      '\r\n' +
+      ' // Gets a bulk of secrets\r\n' +
+      '  rpc GetBulkSecret(GetBulkSecretRequest) returns (GetBulkSecretResponse) {}\r\n' +
+      '  \r\n' +
+      ' // GetSecretRequest is the message to get secret from secret store.   \r\n' +
+      'message GetSecretRequest {\r\n' +
+      ' // The name of secret store.\r\n' +
+      '  string store_name = 1;\r\n' +
+      '\r\n' +
+      ' // The name of secret key.\r\n' +
+      '  string key = 2;\r\n' +
+      '\r\n' +
+      ' // The metadata which will be sent to secret store components.\r\n' +
+      ' // Contains version, status, and so on...\r\n' +
+      '  map<string,string> metadata = 3;\r\n' +
+      '
+    }\r\n' +
+      '\r\n' +
+      ' // GetSecretResponse is the response message to convey the requested secret.\r\n' +
+      'message GetSecretResponse {\r\n' +
+      ' // data is the secret value. Some secret store, such as kubernetes secret\r\n' +
+      ' // store, can save multiple secrets for single secret key.\r\n' +
+      '  map<string, string> data = 1;\r\n' +
+      '
+    }\r\n' +
+      '\r\n' +
+      '\r\n' +
+      ' // GetBulkSecretRequest is the message to get the secrets from secret store.\r\n' +
+      'message GetBulkSecretRequest {\r\n' +
+      ' // The name of secret store.\r\n' +
+      '  string store_name = 1;\r\n' +
+      '\r\n' +
+      ' // The metadata which will be sent to secret store components.\r\n' +
+      '  map<string,string> metadata = 2;\r\n' +
+      '
+    }\r\n' +
+      '\r\n' +
+      '\r\n' +
+      ' // GetBulkSecretResponse is the response message to convey the requested secrets.\r\n' +
+      'message GetBulkSecretResponse {\r\n' +
+      ' // data hold the secret values. Some secret store, such as kubernetes secret\r\n' +
+      ' // store, can save multiple secrets for single secret key.\r\n' +
+      '  map<string, SecretResponse> data = 1;\r\n' +
+      '
+    }\r\n' +
+      '\r\n' +
+      '\r\n' +
+      ' // SecretResponse is a map of decrypted string/string values\r\n' +
+      'message SecretResponse {\r\n' +
+      '  map<string, string> secrets = 1;\r\n' +
+      '
+    }\r\n' +
+      '```\r\n' +
+      ' \r\n' +
+      ' **Q: 是否由Layotto帮用户实现对应密钥获取实现？**\r\n' +
+      ' \r\n' +
+      ' A: API和Layotto运行时不管这事，由sdk或者用户自己处理，或者某个特殊组件想实现这个feature也可以。\r\n' +
+      ' \r\n' +
+      ' ## 4. 组件API\r\n' +
+      ' ```go\r\n' +
+      ' package secretstores\r\n' +
+      ' \r\n' +
+      ' type SecretStore interface {\r\n' +
+      ' \t\t // Init authenticates with the actual secret store and performs other init operation\r\n' +
+      '\tInit(metadata Metadata) error\r\n' +
+      '\t // GetSecret retrieves a secret using a key and returns a map of decrypted string/string values\r\n' +
+      '\tGetSecret(req GetSecretRequest) (GetSecretResponse, error)\r\n' +
+      '\t // BulkGetSecrets retrieves all secrets in the store and returns a map of decrypted string/string values\r\n' +
+      '\tBulkGetSecret(req BulkGetSecretRequest) (BulkGetSecretResponse, error)\r\n' +
+      '
+    }\r\n' +
+      ' \r\n' +
+      ' // GetSecretRequest describes a get secret request from a secret store.\r\n' +
+      'type GetSecretRequest struct {\r\n' +
+      '\tName     string            `json: "name"`\r\n' +
+      '\tMetadata map[string
+      ]string `json: "metadata"`\r\n' +
+      '
+    }\r\n' +
+      '\r\n' +
+      ' // BulkGetSecretRequest describes a bulk get secret request from a secret store.\r\n' +
+      'type BulkGetSecretRequest struct {\r\n' +
+      '\tMetadata map[string
+      ]string `json: "metadata"`\r\n' +
+      '
+    }\r\n' +
+      '\r\n' +
+      ' // GetSecretResponse describes the response object for a secret returned from a secret store.\r\n' +
+      'type GetSecretResponse struct {\r\n' +
+      '\tData map[string
+      ]string `json: "data"`\r\n' +
+      '
+    }\r\n' +
+      '\r\n' +
+      ' // BulkGetSecretResponse describes the response object for all the secrets returned from a secret store.\r\n' +
+      'type BulkGetSecretResponse struct {\r\n' +
+      '\tData map[string
+      ]map[string
+      ]string `json: "data"`\r\n' +
+      '
+    }\r\n' +
+      '\r\n' +
+      ' // DefaultSecretRefKeyName is the default key if secretKeyRef.key is not given.\r\n' +
+      'const DefaultSecretRefKeyName = "_value"\r\n' +
+      '\r\n' +
+      ' // Metadata contains a secretstore specific set of metadata properties.\r\n' +
+      'type Metadata struct {\r\n' +
+      '\tProperties map[string
+      ]string `json: "properties,omitempty"`\r\n' +
+      '
+    }\r\n' +
+      ' ```\r\n' +
+      ' \r\n' +
+      ' \r\n' +
+      ' ## 参考资料\r\n' +
+      ' [dapr密钥管理概览
+    ](https: //docs.dapr.io/zh-hans/developing-applications/building-blocks/secrets/secrets-overview/)\r\n' +
+      ' \r\n' +
+      ' [AWS Secrets Manager
+    ](https: //aws.amazon.com/cn/secrets-manager/features/)\r\n' +
+      ' \r\n' +
+      ' [Microsoft Key Vault
+    ](https: //docs.microsoft.com/zh-cn/rest/api/keyvault)\r\n' +
+      ' \r\n' +
+      ' [Azure Key Vault
+    ](https: //docs.azure.cn/zh-cn/key-vault/general/overview)\r\n' +
+      ' \r\n' +
+      ' [阿里云密钥管理服务
+    ](https: //help.aliyun.com/document_detail/28935.html)\r\n' +
+      '\r\n',
+    reactions: {
+      url: 'https: //api.github.com/repos/mosn/layotto/issues/214/reactions',
+      total_count: 4,
+      '+1': 2,
+      '-1': 0,
+      laugh: 0,
+      hooray: 0,
+      confused: 0,
+      heart: 1,
+      rocket: 1,
+      eyes: 0
+    },
+    timeline_url: 'https: //api.github.com/repos/mosn/layotto/issues/214/timeline',
+    performed_via_github_app: null
+  }
+}

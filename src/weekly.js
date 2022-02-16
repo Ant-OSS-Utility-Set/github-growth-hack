@@ -1,9 +1,12 @@
 const { Octokit } = require("@octokit/core");
-const { logger } = require("./logger");
-const { utils } = require("./utils");
+const { weeklyScoreDAO } = require("./dao/weekly_score");
+const { utils } = require("./utils/time_utils");
 const fetch = require("node-fetch");
 const { countStarsAndForks } = require("./metrics/star_fork");
 const { countNewContributors } = require("./metrics/contributor");
+const moment = require("moment"); // require
+const { listOpenIssues } = require("./metrics/issues");
+const dangerousIssueDAO = require("./dao/dangerous_issue");
 
 let octokit = null;
 
@@ -17,32 +20,40 @@ function generateScoreReport(token, repos, since, to) {
 async function start(token, repos, since, to) {
   // 1. log Title
   console.log(`From ${since} to Now:`);
-  logger.logStart(
-    `rank\tscore\tproject\tnew_stars\tnew_contributors\tnew_forks\tnew_pr\tclosed_pr\tnew_issues\tclosed_issues\tpr_comment\tissue_comment\tdate_from\tdate_to\trecord_date`
-  );
-  logger.logStartZh(
-    `排名,活跃度得分,项目,新增star,新增contributor,fork,new_pr,close_pr,new_issues,close_issues,pr_comment,issue_comment,date_from,date_to,record_date`
-  );
+  weeklyScoreDAO.start();
+  dangerousIssueDAO.start();
   // 2. collect data and calculate score.
   let arr = [];
   for (let i = 0; i < repos.length; i++) {
     const owner = repos[i][0];
     const repo = repos[i][1];
     // fetch data
-    const promiseIssue = collectWeeklyData(owner, repo, since);
+    const promiseIssue = collectIssueData(owner, repo, since);
     const promiseStarFork = countStarsAndForks(token, owner, repo, since);
     const promiseContributor = countNewContributors(token, owner, repo, since);
+    const promiseOpenIssues = listOpenIssues(token, owner, repo);
+
     // merge data
-    arr[i] = Promise.all([promiseIssue, promiseStarFork, promiseContributor])
+    arr[i] = Promise.all([
+      promiseIssue,
+      promiseStarFork,
+      promiseContributor,
+      promiseOpenIssues,
+    ])
       .then(function (results) {
         const result = results[0];
         result.new_stars = results[1].star;
         result.new_forks = results[1].fork;
         result.new_contributors = results[2].new_contributors;
+        result.openIssues = results[3];
         return result;
       })
       // calculate scores
-      .then(calculateScore);
+      // .then(calculateScore);
+      // .then(calculateScore_v2_add(result));
+      .then(function (result) {
+        return calculateScore_v2_sub(result, to);
+      });
   }
   // await
   arr = await Promise.all(arr);
@@ -51,7 +62,7 @@ async function start(token, repos, since, to) {
     return b.score - a.score;
   });
 
-  // 4. log data
+  // 4. write weekly score data
   // 4.1. format
   var sinceReadable = utils.formatWithReadableFormat(since);
   var toReadable = utils.formatWithReadableFormat(to);
@@ -68,11 +79,30 @@ async function start(token, repos, since, to) {
       prevScore = result.score;
       prevRank = rank;
     }
-    // 4.3. do logging
-    logger.log(
-      `${rank}\t${result.score}\t${result.repoName}\t${result.new_stars}\t${result.new_contributors}\t${result.new_forks}\t${result.newPr.size}\t${result.closePr.size}\t${result.newIssue.size}\t${result.closeIssue.size}\t${result.prComment.size}\t${result.issueComment.size}\t${sinceReadable}\t${toReadable}\t${now}`
+    // 4.3. insert
+    weeklyScoreDAO.insert(
+      rank,
+      result.score,
+      result.repoName,
+      result.new_stars,
+      result.new_contributors,
+      result.new_forks,
+      result.newPr.size,
+      result.closePr.size,
+      result.newIssue.size,
+      result.closeIssue.size,
+      result.prComment.size,
+      result.issueComment.size,
+      sinceReadable,
+      toReadable,
+      now
     );
   }
+  // 5. commit
+  // weekly score
+  weeklyScoreDAO.commit();
+  // dangerous issues list
+  dangerousIssueDAO.commit();
 }
 
 function calculateScore(result) {
@@ -86,11 +116,124 @@ function calculateScore(result) {
     result.new_stars +
     2 * result.new_forks +
     5 * result.new_contributors;
+  // console.log(result.closeIssue);
+  // console.log(result.closePr);
   result.score = score;
   return result;
 }
 
-function collectWeeklyData(orgName, repoName, since) {
+function calculateScore_v2_add(result) {
+  result = calculateScore(result);
+
+  // count closed issues with dynamic factor
+  const deadline = 30;
+  const k = 10;
+  result.closeIssue.forEach((e) => {
+    // we care only about community issues
+    // TODO make sure some member has replied to the issue
+    let care = isCommunityIssue(e) && someMemberHasReplied(e);
+    if (!care) {
+      return;
+    }
+    let duration = moment(e.closed_at, "YYYY-MM-DDTHH:mm:ssZ").diff(
+      moment(e.created_at, "YYYY-MM-DDTHH:mm:ssZ"),
+      "day"
+    );
+    // console.log("duration:" + duration);
+    if (duration < deadline) {
+      result.score += (k * (deadline - duration)) / deadline;
+    }
+  });
+  // TODO count closed pr with dynamic factor?
+  return result;
+}
+
+function calculateScore_v2_sub(result, to) {
+  result = calculateScore(result);
+
+  // for open issues
+  const baseline = moment("2022-01-01", "YYYY-MM-DD");
+  const k5 = 5;
+  const k30 = 7;
+  // datastructure:
+  // see data/api-schema/issue/listOpenIssues/result.json
+  result.openIssues.nodes.forEach((issue) => {
+    // we care only about community issues
+    let care = isCommunityIssue_graphql(issue);
+    if (!care) {
+      return;
+    }
+    if (issue.author == null) {
+      // console.log(issue);
+      return;
+    }
+    if (someMemberHasReplied_graphql(issue)) {
+      return;
+    }
+    let createDay = moment(issue.createdAt, "YYYY-MM-DDTHH:mm:ssZ");
+    if (baseline != null && baseline.isAfter(createDay)) {
+      return;
+    }
+    let duration = moment(to).diff(createDay, "day");
+    issue.duration = duration;
+    if (duration < 5) {
+      return;
+    }
+    // log these dangerous issues !
+    dangerousIssueDAO.insert(
+      issue.duration,
+      issue.repository.name,
+      issue.title,
+      issue.url
+    );
+    // substract score
+    if (duration >= 30) {
+      result.score -= k30;
+    } else if (duration >= 5) {
+      result.score -= k5;
+    }
+  });
+  return result;
+}
+
+function isCommunityIssue(issue) {
+  return (
+    issue.author_association != "MEMBER" && issue.author_association != "OWNER"
+  );
+}
+
+function isCommunityIssue_graphql(issue) {
+  return (
+    issue.authorAssociation != "MEMBER" && issue.authorAssociation != "OWNER"
+  );
+}
+
+function someMemberHasReplied_graphql(issue) {
+  for (let comment of issue.comments.nodes) {
+    if (comment.author.login == issue.author.login) {
+      continue;
+    }
+    if (
+      comment.authorAssociation == "MEMBER" ||
+      comment.authorAssociation == "OWNER"
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function someMemberHasReplied(issue) {
+  if (issue.comments == 0) {
+    return false;
+  }
+  // TODO
+  // let url = issue.timeline_url.replace("https: //", "https://");
+  // https://api.github.com/repos/mosn/layotto/issues/214/timeline
+  return true;
+}
+
+function collectIssueData(orgName, repoName, since) {
   let result = {
     repoName: repoName,
     issueComment: new Set(),
@@ -159,14 +302,18 @@ function collectWeeklyData(orgName, repoName, since) {
           // check close
           if (d.closed_at != null) {
             if (isPr(d)) {
-              // close pr
-              result.closePr.add(d.number);
+              // closed pr
+              // only count those merged.
+              if (d.pull_request.merged_at == null) {
+                continue;
+              }
+              result.closePr.add(d);
               if (d.created_at >= since) {
                 result.newPr.add(d.number);
               }
             } else {
-              // close issues
-              result.closeIssue.add(d.number);
+              // closed issue
+              result.closeIssue.add(d);
               if (d.created_at >= since) {
                 result.newIssue.add(d.number);
               }
@@ -201,6 +348,6 @@ function isPr(d) {
   return false;
 }
 
-exports.weekly = {
+module.exports = {
   generateScoreReport: generateScoreReport,
 };

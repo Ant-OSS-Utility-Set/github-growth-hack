@@ -1,6 +1,7 @@
-const { weekly } = require("./weekly");
+const weekly = require("./weekly");
 const { monthly } = require("./monthly");
-const { utils } = require("./utils");
+const { scanner } = require("./scanner");
+const { utils } = require("./utils/time_utils");
 
 // Modify these configuration items as you like
 // 1. Your github API token
@@ -20,7 +21,7 @@ let to = utils.today();
 
 // 3. Which repositries do you care about?
 // Parameters in the repos array are:
-// owner, repo
+// [owner, repo]
 let repos = [
   ["sofastack", "sofa-tracer"],
   ["sofastack", "sofa-rpc-node"],
@@ -44,14 +45,20 @@ let repos = [
   ["mosn", "layotto"],
 ];
 
-console.log("Since: " + since);
+// 4. Let's start!
+// Belows are startup code. You don't have to modify them
+if (token == null || token.length < 40) {
+  throw new Error("Please set your github token in src/index.js");
+}
+console.log("From: " + since);
 console.log("To: " + to);
 
-// Let's start
 const args = process.argv.slice(2);
 console.log("Mode: " + args[0]);
 if (args[0] == "month") {
   monthly.generateReportForLastMonth(token, repos);
+} else if (args[0] == "scan") {
+  scanner.scan(token, repos, since, to);
 } else {
   weekly.generateScoreReport(token, repos, since, to);
 }
