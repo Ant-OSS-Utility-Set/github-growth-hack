@@ -1,15 +1,84 @@
 const fs = require("fs");
 const moment = require("moment");
+const fetch = require("node-fetch");
 
-const dangerousIssuesDAO = {
-  start: function () {
-    fsDAOImpl.start();
-  },
+const dingTalkDao = {
+  // The data structure in this array is:
+  // {
+  //   duration: duration,
+  //   project: project,
+  //   title: title,
+  //   url: url,
+  // }
+  issues: [],
+  url: "",
+  keyword: "我们",
+  owners: new Map(),
+  start: function () {},
   insert: function (duration, project, title, url) {
-    fsDAOImpl.insert(duration, project, title, url);
+    this.issues.push({
+      duration: duration,
+      project: project,
+      title: title,
+      url: url,
+    });
   },
   commit: function () {
-    fsDAOImpl.commit();
+    if (this.url.length == 0) {
+      // console.log("DingTalk url is empty");
+      return;
+    }
+    // sort
+    this.issues.sort((a, b) => {
+      return b.duration - a.duration;
+    });
+    // group by project
+    let project2issues = new Map();
+    this.issues.forEach((issue) => {
+      let name = issue.project;
+      if (project2issues.get(name) == null) {
+        project2issues.set(name, []);
+      }
+      let list = project2issues.get(name);
+      list.push(issue);
+    });
+    // notify
+    project2issues.forEach((k, v) => {
+      // console.log(k, v);
+      let uid = this.owners.get(v);
+      // concatenate messages.
+      let content = `@${uid} 老师，有空看下${v}的issue哈, ${this.keyword}需要你：\n `;
+      // console.log(v);
+      // console.log(content);
+      k.forEach((issue) => {
+        content += `用户等了${issue.duration}天啦: ${issue.url}\n`;
+      });
+      // send
+      fetch(this.url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          at: {
+            atMobiles: [""],
+            atUserIds: [uid],
+            isAtAll: false,
+          },
+          text: {
+            content: content,
+          },
+          msgtype: "text",
+          title: "",
+        }),
+      })
+        // 3. parse
+        .then((res) => {
+          return res.json();
+        })
+        .then((json) => console.log(json));
+    });
   },
 };
 
@@ -78,4 +147,22 @@ const fsDAOImpl = {
   },
 };
 
-module.exports = dangerousIssuesDAO;
+module.exports = {
+  start: function () {
+    fsDAOImpl.start();
+    dingTalkDao.start();
+  },
+  insert: function (duration, project, title, url) {
+    fsDAOImpl.insert(duration, project, title, url);
+    dingTalkDao.insert(duration, project, title, url);
+  },
+  commit: function () {
+    fsDAOImpl.commit();
+    dingTalkDao.commit();
+  },
+  setDingTalkGroup(url, keyword, owners) {
+    dingTalkDao.url = url;
+    dingTalkDao.keyword = keyword;
+    dingTalkDao.owners = owners;
+  },
+};

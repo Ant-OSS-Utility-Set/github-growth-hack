@@ -1,7 +1,5 @@
-const weekly = require("./weekly");
-const { monthly } = require("./monthly");
-const { scanner } = require("./scanner");
 const { utils } = require("./utils/time_utils");
+const { dispatch } = require("./dispatcher");
 
 // Modify these configuration items as you like
 // 1. Your github API token
@@ -23,42 +21,20 @@ let to = utils.today();
 // Parameters in the repos array are:
 // [owner, repo]
 let repos = [
-  ["sofastack", "sofa-tracer"],
-  ["sofastack", "sofa-rpc-node"],
-  ["sofastack", "sofa-rpc"],
-  ["sofastack", "sofa-registry"],
-  ["sofastack", "sofa-node"],
-  ["sofastack", "sofa-lookout"],
-  ["sofastack", "sofa-jraft"],
-  ["sofastack", "sofa-jarslink"],
-  ["sofastack", "sofa-hessian-node"],
-  ["sofastack", "sofa-hessian"],
-  ["sofastack", "sofa-dashboard"],
-  ["sofastack", "sofa-boot"],
-  ["sofastack", "sofa-bolt-python"],
-  ["sofastack", "sofa-bolt-node"],
-  ["sofastack", "sofa-bolt-cpp"],
-  ["sofastack", "sofa-bolt"],
-  ["sofastack", "sofa-ark"],
-  ["sofastack", "sofa-acts"],
   ["mosn", "mosn"],
   ["mosn", "layotto"],
 ];
 
-// 4. Let's start!
-// Belows are startup code. You don't have to modify them
-if (token == null || token.length < 40) {
-  throw new Error("Please set your github token in src/index.js");
-}
-console.log("From: " + since);
-console.log("To: " + to);
+// 4. (Optional) Send messages to dingtalk group
+const dingTalkGroupConfig = {
+  url: "",
+  keyword: "",
+  owners: new Map(),
+};
 
-const args = process.argv.slice(2);
-console.log("Mode: " + args[0]);
-if (args[0] == "month") {
-  monthly.generateReportForLastMonth(token, repos);
-} else if (args[0] == "scan") {
-  scanner.scan(token, repos, since, to);
-} else {
-  weekly.generateScoreReport(token, repos, since, to);
-}
+dingTalkGroupConfig.owners.set("project name", "dingtalk uid");
+dingTalkGroupConfig.owners.set("layotto", "193555");
+
+// 5. Let's start!
+// Belows are startup code. You don't have to modify them
+dispatch(token, repos, since, to, dingTalkGroupConfig);

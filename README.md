@@ -24,7 +24,7 @@ Screenshots of the reports:
 git clone https://github.com/seeflood/github-weekly-statistics.git
 ```
 
-1. Modify the configuration items in `src/index.js` as you like
+1. Modify the configuration options in `src/index.js` 
 
 ```javascript
 // Modify these configuration items as you like
@@ -45,10 +45,22 @@ let to = utils.today();
 
 // 3. Which repositries do you care about?
 // Parameters in the repos array are:
-// owner, repo
+// [owner, repo]
 let repos = [
-  ["sofastack", "sofa-tracer"],
-  ["sofastack", "sofa-rpc-node"],
+  ["mosn", "mosn"],
+  ["mosn", "layotto"],
+];
+
+// 4. (Optional) Send messages to dingtalk group
+const dingTalkGroupConfig = {
+  url: "",
+  keyword: "",
+  owners: new Map(),
+};
+
+dingTalkGroupConfig.owners.set("project name", "dingtalk uid");
+dingTalkGroupConfig.owners.set("layotto", "193555");
+
 ```
 
 2. Run it
@@ -70,6 +82,12 @@ npm run week
    You can open them with Excel:
 
    ![excel](excel.png)
+
+### Send issue warning to dingtalk group
+
+1. Modify the configuration options in `src/index.js`
+
+2. Run `npm run scan`
 
 ### Generate Weekly Report as Grafana Dashboard
 
@@ -127,7 +145,7 @@ npm run month
 ### How is the 'score' calculated?
 
 Based on the [formula](http://oss.x-lab.info/github-insight-report-2020.pdf) proposed by [open-digger](https://github.com/X-lab2017/open-digger),but I add a new factor "new_contributors"
-![how.png](how.png)
+![how.png](https://user-images.githubusercontent.com/26001097/148624794-129025ba-6e05-4cef-a738-b9ee1dd90e88.png)
 
 ## TODO
 
