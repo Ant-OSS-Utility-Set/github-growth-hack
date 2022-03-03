@@ -5,28 +5,36 @@ const fetch = require("node-fetch");
 const { countStarsAndForks } = require("./metrics/star_fork");
 const { countNewContributors } = require("./metrics/contributor");
 const moment = require("moment"); // require
-const { listOpenIssues } = require("./metrics/issues");
+const {
+  listOpenIssues,
+  filterOutDangerousIssues,
+} = require("./metrics/issues");
 const dangerousIssueDAO = require("./dao/dangerous_issue");
 
 let octokit = null;
 
-function generateScoreReport(token, repos, since, to) {
+function generateScoreReport(token, repos, mergeRepo, since, to) {
   octokit = new Octokit({
     auth: token,
   });
-  start(token, repos, since, to);
+  start(token, repos, mergeRepo, since, to);
 }
 
-async function start(token, repos, since, to) {
+async function start(token, repos, mergeRepo, since, to) {
   // 1. log Title
   console.log(`From ${since} to Now:`);
   weeklyScoreDAO.start();
   dangerousIssueDAO.start();
+
   // 2. collect data and calculate score.
   let arr = [];
   for (let i = 0; i < repos.length; i++) {
     const owner = repos[i][0];
     const repo = repos[i][1];
+    let nickName = repos[i][2];
+    if (nickName == null) {
+      nickName = repo;
+    }
     // fetch data
     const promiseIssue = collectIssueData(owner, repo, since);
     const promiseStarFork = countStarsAndForks(token, owner, repo, since);
@@ -46,6 +54,7 @@ async function start(token, repos, since, to) {
         result.new_forks = results[1].fork;
         result.new_contributors = results[2].new_contributors;
         result.openIssues = results[3];
+        result.nickName = nickName;
         return result;
       })
       // calculate scores
@@ -83,7 +92,7 @@ async function start(token, repos, since, to) {
     weeklyScoreDAO.insert(
       rank,
       result.score,
-      result.repoName,
+      result.nickName,
       result.new_stars,
       result.new_contributors,
       result.new_forks,
@@ -151,46 +160,22 @@ function calculateScore_v2_add(result) {
 function calculateScore_v2_sub(result, to) {
   result = calculateScore(result);
 
-  // for open issues
-  const baseline = moment("2022-01-01", "YYYY-MM-DD");
-  const k5 = 5;
-  const k30 = 7;
-  // datastructure:
-  // see data/api-schema/issue/listOpenIssues/result.json
-  result.openIssues.nodes.forEach((issue) => {
-    // we care only about community issues
-    let care = isCommunityIssue_graphql(issue);
-    if (!care) {
-      return;
-    }
-    if (issue.author == null) {
-      // console.log(issue);
-      return;
-    }
-    if (someMemberHasReplied_graphql(issue)) {
-      return;
-    }
-    let createDay = moment(issue.createdAt, "YYYY-MM-DDTHH:mm:ssZ");
-    if (baseline != null && baseline.isAfter(createDay)) {
-      return;
-    }
-    let duration = moment(to).diff(createDay, "day");
-    issue.duration = duration;
-    if (duration < 5) {
-      return;
-    }
+  // check open issues
+  const k1 = 5;
+  const k2 = 7;
+  filterOutDangerousIssues(result.openIssues, to).forEach((issue) => {
     // log these dangerous issues !
     dangerousIssueDAO.insert(
       issue.duration,
-      issue.repository.name,
+      issue.project,
       issue.title,
       issue.url
     );
     // substract score
-    if (duration >= 30) {
-      result.score -= k30;
-    } else if (duration >= 5) {
-      result.score -= k5;
+    if (issue.isVeryDangerous) {
+      result.score -= k2;
+    } else {
+      result.score -= k1;
     }
   });
   return result;
@@ -200,27 +185,6 @@ function isCommunityIssue(issue) {
   return (
     issue.author_association != "MEMBER" && issue.author_association != "OWNER"
   );
-}
-
-function isCommunityIssue_graphql(issue) {
-  return (
-    issue.authorAssociation != "MEMBER" && issue.authorAssociation != "OWNER"
-  );
-}
-
-function someMemberHasReplied_graphql(issue) {
-  for (let comment of issue.comments.nodes) {
-    if (comment.author.login == issue.author.login) {
-      continue;
-    }
-    if (
-      comment.authorAssociation == "MEMBER" ||
-      comment.authorAssociation == "OWNER"
-    ) {
-      return true;
-    }
-  }
-  return false;
 }
 
 function someMemberHasReplied(issue) {

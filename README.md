@@ -4,9 +4,10 @@ A tool to help you do github statistics.
 
 It can:
 
-- generate a weekly report for the github projects you care about
-- calculate an "activity score" for every project
-- use the scores to rank these projects
+- generate a weekly or monthly report for the github projects you care about
+   - calculate an "activity score" for every project
+   - use the scores to rank these projects
+- find those issues without any comments and warn you
 
 Screenshots of the reports:
 
@@ -14,6 +15,12 @@ Screenshots of the reports:
 
 ![excel](excel.png)
 
+![](https://user-images.githubusercontent.com/26001097/156523792-34acd5ac-577e-4981-b026-3f26361e46db.png)
+
+Screenshots of the warnings:
+![](https://user-images.githubusercontent.com/26001097/156523399-c044b214-c454-46dd-a71f-77bde5b73121.png)
+
+![](https://user-images.githubusercontent.com/26001097/156515698-ebaf02ab-5ffe-4fb9-9201-a76e44274d3a.png)
 ## Usage
 
 ### Generate Weekly Report as Excel
@@ -144,7 +151,7 @@ npm run month
 
 ### How is the 'score' calculated?
 
-Based on the [formula](http://oss.x-lab.info/github-insight-report-2020.pdf) proposed by [open-digger](https://github.com/X-lab2017/open-digger),but I add a new factor "new_contributors"
+Based on the [formula](http://oss.x-lab.info/github-insight-report-2020.pdf) proposed by [open-digger](https://github.com/X-lab2017/open-digger),but I add some new factors
 ![how.png](https://user-images.githubusercontent.com/26001097/148624794-129025ba-6e05-4cef-a738-b9ee1dd90e88.png)
 
 ## TODO

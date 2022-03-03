@@ -24,10 +24,23 @@ const dingTalkDao = {
     });
   },
   commit: function () {
+    // 1. check configuration
     if (this.url.length == 0) {
       // console.log("DingTalk url is empty");
       return;
     }
+    // 2. check if all clear
+    if (this.issues.length == 0) {
+      let content = `${this.keyword}目前没有舆情 issue ，大家回复很及时，奖励一人一辆特斯拉!\n`;
+      this.send(content, null, true);
+      this.sendImage(
+        "https://gw.alipayobjects.com/mdn/rms_6ac329/afts/img/A*PXPwR6je8-MAAAAAAAAAAAAAARQnAQ",
+        null,
+        false
+      );
+      return;
+    }
+    // 3. send warning
     // sort
     this.issues.sort((a, b) => {
       return b.duration - a.duration;
@@ -54,31 +67,60 @@ const dingTalkDao = {
         content += `用户等了${issue.duration}天啦: ${issue.url}\n`;
       });
       // send
-      fetch(this.url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          at: {
-            atMobiles: [""],
-            atUserIds: [uid],
-            isAtAll: false,
-          },
-          text: {
-            content: content,
-          },
-          msgtype: "text",
-          title: "",
-        }),
-      })
-        // 3. parse
-        .then((res) => {
-          return res.json();
-        })
-        .then((json) => console.log(json));
+      this.send(content, uid, false);
     });
+  },
+  send: function (content, atUid, isAtAll) {
+    fetch(this.url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        at: {
+          atMobiles: [""],
+          atUserIds: [atUid],
+          isAtAll: isAtAll,
+        },
+        text: {
+          content: content,
+        },
+        msgtype: "text",
+        title: "",
+      }),
+    })
+      // 3. parse
+      .then((res) => {
+        return res.json();
+      })
+      .then((json) => console.log(json));
+  },
+  sendImage: function (imageUrl, atUid, isAtAll) {
+    fetch(this.url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        msgtype: "markdown",
+        markdown: {
+          title: `${this.keyword}`,
+          text: `![](${imageUrl}) \n`,
+        },
+        at: {
+          atMobiles: [""],
+          atUserIds: [atUid],
+          isAtAll: isAtAll,
+        },
+      }),
+    })
+      // 3. parse
+      .then((res) => {
+        return res.json();
+      })
+      .then((json) => console.log(json));
   },
 };
 

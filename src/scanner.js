@@ -14,6 +14,9 @@ const scanner = {
       arr[i] = listDangerousOpenIssues(token, owner, repo, to)
         // write
         .then(function (resultsArray) {
+          if (resultsArray.length == 0) {
+            return;
+          }
           resultsArray.forEach((result) => {
             dangerousIssueDAO.insert(
               result.duration,

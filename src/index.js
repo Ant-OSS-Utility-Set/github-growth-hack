@@ -19,16 +19,48 @@ let to = utils.today();
 
 // 3. Which repositries do you care about?
 // Parameters in the repos array are:
-// [owner, repo]
+// [owner, repo , nickname_in_report(optional) ]
 let repos = [
-  ["mosn", "mosn"],
   ["mosn", "layotto"],
+  ["layotto", "java-sdk", "layotto-java-sdk"],
+  ["sofastack", "sofa-tracer"],
+  ["sofastack", "sofa-rpc-node"],
+  ["sofastack", "sofa-rpc"],
+  ["sofastack", "sofa-registry"],
+  ["sofastack", "sofa-jraft"],
+  ["sofastack", "sofa-node"],
+  ["sofastack", "sofa-lookout"],
+  ["sofastack", "sofa-hessian-node"],
+  ["sofastack", "sofa-hessian"],
+  ["sofastack", "sofa-dashboard"],
+  ["sofastack", "sofa-boot"],
+  ["sofastack", "sofa-bolt-python"],
+  ["sofastack", "sofa-bolt-node"],
+  ["sofastack", "sofa-bolt-cpp"],
+  ["sofastack", "sofa-bolt"],
+  ["sofastack", "sofa-ark"],
+  ["sofastack", "sofa-acts"],
+  ["sofastack", "sofa-jarslink"],
+  ["mosn", "mosn"],
 ];
 
-// 4. (Optional) Send messages to dingtalk group
+// (Optional) Merge different repos into one report
+let mergeRepo = {
+};
+
+// 4. (Optional) Modify dangerous issues related configs
+const dangerousIssuesConfig = {
+  // shouldReplyInXDays: 4,
+
+  // default
+  // shouldReplyInXDays: 5,
+  // mustReplyInXDays: 30,
+};
+
+// 5. (Optional) Send messages to dingtalk group
 const dingTalkGroupConfig = {
-  url: "",
-  keyword: "",
+  url:"",
+  keyword: "SOFAStack",
   owners: new Map(),
 };
 
@@ -37,4 +69,12 @@ dingTalkGroupConfig.owners.set("layotto", "193555");
 
 // 5. Let's start!
 // Belows are startup code. You don't have to modify them
-dispatch(token, repos, since, to, dingTalkGroupConfig);
+dispatch(
+  token,
+  repos,
+  mergeRepo,
+  since,
+  to,
+  dangerousIssuesConfig,
+  dingTalkGroupConfig
+);

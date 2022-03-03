@@ -43,7 +43,27 @@ const weeklyScoreDAO = {
     fsDAOImpl.commit();
   },
 };
-
+const mysqlDAOImpl = {
+  start: function () {},
+  insert: function (
+    rank,
+    score,
+    repoName,
+    new_stars,
+    new_contributors,
+    new_forks,
+    new_pr,
+    closePr,
+    newIssue,
+    closeIssue,
+    prComment,
+    issueComment,
+    sinceReadable,
+    toReadable,
+    now
+  ) {},
+  commit: function () {},
+};
 const fsDAOImpl = {
   start: function () {
     this.startEn(

@@ -1,6 +1,9 @@
 const fetch = require("node-fetch");
 const moment = require("moment"); // require
 
+let shouldReplyInXDays = 5;
+let mustReplyInXDays = 30;
+
 async function listOpenIssues(token, owner, repo) {
   // result
   let query = `query listOpenIssues($owner: String!, $name: String!) {
@@ -65,43 +68,52 @@ async function listOpenIssues(token, owner, repo) {
 const baseline = moment("2022-01-01", "YYYY-MM-DD");
 
 async function listDangerousOpenIssues(token, owner, repo, to) {
-  return listOpenIssues(token, owner, repo).then((issues) => {
-    const result = [];
-    // filter out those dangerous issues
-    issues.nodes.forEach((issue) => {
-      // we care only about community issues
-      let care = isCommunityIssue_graphql(issue);
-      if (!care) {
-        return;
-      }
-      if (issue.author == null) {
-        // console.log(issue);
-        return;
-      }
-      if (someMemberHasReplied_graphql(issue)) {
-        return;
-      }
-      // check baseline
-      let createDay = moment(issue.createdAt, "YYYY-MM-DDTHH:mm:ssZ");
-      if (baseline != null && baseline.isAfter(createDay)) {
-        return;
-      }
-      // check duration
-      let duration = moment(to).diff(createDay, "day");
-      issue.duration = duration;
-      if (duration < 5) {
-        return;
-      }
-      // this is a dangerous issue !
-      result.push({
-        duration: issue.duration,
-        project: issue.repository.name,
-        title: issue.title,
-        url: issue.url,
-      });
+  return listOpenIssues(token, owner, repo).then((issues) =>
+    filterOutDangerousIssues(issues, to)
+  );
+}
+
+function filterOutDangerousIssues(issues, to) {
+  const result = [];
+  // filter out those dangerous issues
+  issues.nodes.forEach((issue) => {
+    // we care only about community issues
+    let care = isCommunityIssue_graphql(issue);
+    if (!care) {
+      return;
+    }
+    if (issue.author == null) {
+      // console.log(issue);
+      return;
+    }
+    if (someMemberHasReplied_graphql(issue)) {
+      return;
+    }
+    // check baseline
+    let createDay = moment(issue.createdAt, "YYYY-MM-DDTHH:mm:ssZ");
+    if (baseline != null && baseline.isAfter(createDay)) {
+      return;
+    }
+    // check duration
+    let duration = moment(to).diff(createDay, "day");
+    issue.duration = duration;
+    if (duration < shouldReplyInXDays) {
+      return;
+    }
+    // this is a dangerous issue !
+    issue.veryDangerous = false;
+    if (duration >= mustReplyInXDays) {
+      issue.veryDangerous = true;
+    }
+    result.push({
+      duration: issue.duration,
+      project: issue.repository.name,
+      title: issue.title,
+      url: issue.url,
+      isVeryDangerous: issue.veryDangerous,
     });
-    return result;
   });
+  return result;
 }
 
 function isCommunityIssue_graphql(issue) {
@@ -128,4 +140,15 @@ function someMemberHasReplied_graphql(issue) {
 module.exports = {
   listOpenIssues: listOpenIssues,
   listDangerousOpenIssues: listDangerousOpenIssues,
+  filterOutDangerousIssues: filterOutDangerousIssues,
+  shouldReplyInXDays(days) {
+    if (days != null && days > 0) {
+      shouldReplyInXDays = days;
+    }
+  },
+  mustReplyInXDays(days) {
+    if (days != null && days > 0) {
+      mustReplyInXDays = days;
+    }
+  },
 };
