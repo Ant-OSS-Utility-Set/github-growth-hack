@@ -1,15 +1,35 @@
-# github-weekly-statistics
+# Github Growth Hack
 
-A tool to help you do github statistics.
+[中文文档](README-zh.md)
+
+A tool to help you do growth hacking for your open source projects.
+
+## Motivation
+This project wants to solve these problems:
+
+- Push
+
+How to make the  project owners invest more man-days in their open source projects?
+
+- Efficiency improvement
+
+How to automate some chores and save some technical man-days?
+
+- Planning
+
+Given the limited resource of technical man-days,what should we do to (try to) maximize the benefits?
+
+## Features
 
 It can:
 
-- generate a weekly or monthly report for the github projects you care about
-   - calculate an "activity score" for every project
-   - use the scores to rank these projects
-- find those issues without any comments and warn you
+1. Generate a weekly or monthly report for the github projects you care about
+  - calculate an "activity score" for every project
+  - use the scores to rank these projects
+  - send the report to IM group 
+  - have a dashboard to show them
 
-Screenshots of the reports:
+Screenshots of the dashboard and reports:
 
 ![](grafana.png)
 
@@ -17,10 +37,13 @@ Screenshots of the reports:
 
 ![](https://user-images.githubusercontent.com/26001097/156523792-34acd5ac-577e-4981-b026-3f26361e46db.png)
 
+2. Find those issues without any comments and warn you
+
 Screenshots of the warnings:
 ![](https://user-images.githubusercontent.com/26001097/156523399-c044b214-c454-46dd-a71f-77bde5b73121.png)
 
 ![](https://user-images.githubusercontent.com/26001097/156515698-ebaf02ab-5ffe-4fb9-9201-a76e44274d3a.png)
+
 ## Usage
 
 ### Generate Weekly Report as Excel
@@ -31,7 +54,7 @@ Screenshots of the warnings:
 git clone https://github.com/seeflood/github-weekly-statistics.git
 ```
 
-1. Modify the configuration options in `src/index.js` 
+1. Modify the configuration options in `src/index.js`
 
 ```javascript
 // Modify these configuration items as you like
@@ -67,7 +90,6 @@ const dingTalkGroupConfig = {
 
 dingTalkGroupConfig.owners.set("project name", "dingtalk uid");
 dingTalkGroupConfig.owners.set("layotto", "193555");
-
 ```
 
 2. Run it
