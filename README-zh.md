@@ -18,13 +18,16 @@ A tool to help you do growth hacking for your open source projects.
 
 大盘数据可以生成excel，可以推送到 IM 群。
 
-![excel](excel.png)
+ <img src="excel.png" width = "50%" height = "50%" alt="welcome" align=center />
 
 ![](https://user-images.githubusercontent.com/26001097/156523792-34acd5ac-577e-4981-b026-3f26361e46db.png)
 
 ### 2. 答疑治理
 #### 2.1. 将 IM 群的提问引流到 issue 区
 - IM 入群提示, 建议提问时先发issue
+
+ <img src="https://user-images.githubusercontent.com/26001097/157403838-3d789e25-e9cc-4fdf-9606-59894feaa0e6.png" width = "40%" height = "40%" alt="welcome" align=center />
+
 - 用户艾特机器人，可以查看使用帮助
 
 #### 2.2. 推动 owner 回复 issue
@@ -53,7 +56,8 @@ issue 被 assign 后，在 IM 群中提醒当事人。
 
 定期找出长时间未回复的issue，在大群中报警，通知项目维护者。
 
-![](https://user-images.githubusercontent.com/26001097/156523399-c044b214-c454-46dd-a71f-77bde5b73121.png)
+ <img src="https://user-images.githubusercontent.com/26001097/156523399-c044b214-c454-46dd-a71f-77bde5b73121.png" width = "40%" height = "40%" alt="welcome" align=center />
+
 
 ![](https://user-images.githubusercontent.com/26001097/156515698-ebaf02ab-5ffe-4fb9-9201-a76e44274d3a.png)
 
