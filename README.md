@@ -1,186 +1,105 @@
 # Github Growth Hack
 
-[中文文档](README-zh.md)
+[English document](README-en.md)
 
 A tool to help you do growth hacking for your open source projects.
 
-## Motivation
+## 要解决的问题
 
-This project wants to solve these problems:
+- 推动：如何推动项目 owner 投入技术人日到开源
+- 提效：如何自动化一些琐事，节约一些技术人日？
+- 规划：给定有限的技术人日资源，应该做哪些事，以便（尽量）最大化收益？
 
-- Push
+## 功能
 
-How to make the project owners invest more man-days in their open source projects?
+### 1. 开源项目大盘
 
-- Efficiency improvement
-
-How to automate some chores and save some technical man-days?
-
-- Planning
-
-Given the limited resource of technical man-days,what should we do to (try to) maximize the benefits?
-
-## Features
-
-It can:
-
-1. Generate a weekly or monthly report for the github projects you care about
-
-- calculate an "activity score" for every project
-- use the scores to rank these projects
-- send the report to IM group
-- have a dashboard to show them
-
-Screenshots of the dashboard and reports:
+为每个项目计算活跃度，排序，生成大盘。
 
 ![](grafana.png)
 
-![excel](excel.png)
-
-![](https://user-images.githubusercontent.com/26001097/156523792-34acd5ac-577e-4981-b026-3f26361e46db.png)
-
-2. Find those issues without any comments and warn you
+除了活跃度，还有舆情 issue 大盘
 
 ![](https://user-images.githubusercontent.com/26001097/157366957-6fb03357-97e0-47b3-80e5-e8b8c88ad96e.png)
 
-Screenshots of the warnings:
-![](https://user-images.githubusercontent.com/26001097/156523399-c044b214-c454-46dd-a71f-77bde5b73121.png)
+大盘数据可以生成 excel，可以推送到 IM 群。
+
+ <img src="excel.png" width = "50%" height = "50%" alt="welcome" align=center />
+
+![](https://user-images.githubusercontent.com/26001097/156523792-34acd5ac-577e-4981-b026-3f26361e46db.png)
+
+### 2. 答疑治理
+
+#### 2.1. 将 IM 群的提问引流到 issue 区
+
+- IM 入群提示, 建议提问时先发 issue
+
+ <img src="https://user-images.githubusercontent.com/26001097/157403838-3d789e25-e9cc-4fdf-9606-59894feaa0e6.png" width = "40%" height = "40%" alt="welcome" align=center />
+
+- 用户艾特机器人，可以查看使用帮助
+
+#### 2.2. 推动 owner 回复 issue
+
+- 带着 issue 艾特机器人，机器人开始帮忙催 owner 回 issue
+
+- 定时催促，直到回复了 issue
+
+- 如果长时间不回复，舆情风险上升，机器人会在别的群里也催促 owner
+
+#### 2.3. issue assigned 群聊提醒
+
+issue 被 assign 后，在 IM 群中提醒当事人。
+![image](https://user-images.githubusercontent.com/26001097/157380722-b9dac88a-b8cb-48ef-bccf-5536db319264.png)
+
+#### 2.4. 舆情 issue 治理
+
+我们定义舆情 issue 有不同等级：
+| level | 标准 |
+| -- | -- |
+| 1 | 有用户在群里贴出来 issue 、寻求解答 |
+| 2 | 有用户在群里贴出来 issue 、寻求解答，但催促 owner 后仍未回复。 |
+| 3 | 5 天没人回复的 issue |
+| 4 | 30 天没人回复的 issue |
+
+基于上述抽象，本工具提供了治理舆情 issue 的解决方案
+
+##### 2.4.1. 舆情 issue 扫描、报警
+
+定期找出长时间未回复的 issue，在大群中报警，通知项目维护者。
+
+ <img src="https://user-images.githubusercontent.com/26001097/156523399-c044b214-c454-46dd-a71f-77bde5b73121.png" width = "40%" height = "40%" alt="welcome" align=center />
 
 ![](https://user-images.githubusercontent.com/26001097/156515698-ebaf02ab-5ffe-4fb9-9201-a76e44274d3a.png)
 
-## Usage
+##### 2.4.2. 小群预报警
 
-### Generate Weekly Report as Excel
+在大群报警之前，可以提前 1 天在小群友情提醒，更加人性化。
 
-0. clone the repo
+![image](https://user-images.githubusercontent.com/26001097/157793252-e07aec12-df0d-4128-b790-0d31f1bd31a3.png)
 
-```bash
-git clone https://github.com/seeflood/github-weekly-statistics.git
-```
+### TODO
 
-1. Modify the configuration options in `src/index.js`
+- 文档治理
+- 自然选择计划：对于长期缺少维护、不处理舆情的项目，机器人定期给出项目归档建议，let it die.
+- 社区任务(help wanted issues)推广
+- 分析瓶颈指标，给出建议
+  比如平均回复时间太长;
+  比如非 Member 提的 issue 较少，说明用户少，或者用户提问不在 github ;
+- 快速搭建一套 github workflow
 
-```javascript
-// Modify these configuration items as you like
-// 1. Your github API token
-// We use your token to invoke github graphql api to query some repo data and won't do any modification.
-// see https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#authenticating-with-graphql
-const token = ``;
+## 使用文档
 
-// 2. Time range.
-// modify it as you like
-// e.g.
-// let since = `2021-06-12T00:32:13Z`;
-// let since = utils.lastSunday();
-// let since = `2021-10-09T00:32:13Z`;
-let since = utils.sevenDaysBefore();
-// let to = utils.thisFriday23_59_59();
-let to = utils.today();
+见[英文文档](README-en.md#usage) ，暂未翻译。
 
-// 3. Which repositries do you care about?
-// Parameters in the repos array are:
-// [owner, repo]
-let repos = [
-  ["mosn", "mosn"],
-  ["mosn", "layotto"],
-];
-
-// 4. (Optional) Send messages to dingtalk group
-const dingTalkGroupConfig = {
-  url: "",
-  keyword: "",
-  owners: new Map(),
-};
-
-dingTalkGroupConfig.owners.set("project name", "dingtalk uid");
-dingTalkGroupConfig.owners.set("layotto", "193555");
-```
-
-2. Run it
-
-```bash
-# install packages
-npm install
-npm run week
-```
-
-3. Now you have the weekly report for your repositories!
-
-   ![result](result.png)
-
-   Check the generated .csv files:
-
-   ![csv](csv.png)
-
-   You can open them with Excel:
-
-   ![excel](excel.png)
-
-### Send issue warning to dingtalk group
-
-1. Modify the configuration options in `src/index.js`
-
-2. Run `npm run scan`
-
-### Generate Weekly Report as Grafana Dashboard
-
-To generate a Grafana Dashboard,you have to load the `report.csv` data into a MYSQL table and start a Grafana server integrated with the MYSQL table.
-
-1. Create a MYSQL Table
-
-```SQL
-CREATE TABLE `github_repo_weekly` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `date_from` datetime DEFAULT NULL,
-  `date_to` datetime DEFAULT NULL,
-  `record_date` datetime DEFAULT NULL,
-  `rank` int(11) NOT NULL,
-  `score` int(11) DEFAULT NULL,
-  `owner` varchar(40) DEFAULT NULL,
-  `project` varchar(100) DEFAULT NULL,
-  `new_stars` int(11) DEFAULT NULL,
-  `new_contributors` int(11) DEFAULT NULL,
-  `new_forks` int(11) DEFAULT NULL,
-  `new_pr` int(11) DEFAULT NULL,
-  `closed_pr` int(11) DEFAULT NULL,
-  `new_issues` int(11) DEFAULT NULL,
-  `closed_issues` int(11) DEFAULT NULL,
-  `pr_comment` int(11) DEFAULT NULL,
-  `issue_comment` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AVG_ROW_LENGTH=150 ROW_FORMAT=DYNAMIC COMMENT='github_repo_weekly'
-;
-
-```
-
-2. Run a Grafana server and add the MYSQL Table as a new datasource.
-   ![](add_datasource.png)
-
-3. Set up your Grafana dashboard using the config file [grafana/dashboard.json](grafana/dashboard.json)
-
-4. Run our script to generate Excel reports(see above).
-
-5. Load the generated `report.csv` into the MYSQL table.
-   You can use any tool you like to finish this step.
-   Since I deploy MYSQL in alibaba cloud,I use the [DMS Console provided by alibaba cloud](https://dms.aliyun.com/) to load the csv data.
-
-6. Open your Grafana Dashboard:
-   ![](grafana.png)
-
-### Generate "Monthly Active Contributors(MAC)" report as Excel
-
-```bash
-npm run month
-```
-
-## Rationale
-
-### How is the 'score' calculated?
-
-Based on the [formula](http://oss.x-lab.info/github-insight-report-2020.pdf) proposed by [open-digger](https://github.com/X-lab2017/open-digger),but I add some new factors
+## 活跃度指标说明
 
  <img src="https://user-images.githubusercontent.com/26001097/158004228-3bf9b244-f64f-4017-9827-6edbd981b66d.png" width = "200%" height = "200%" alt="score" align=center />
- 
-## TODO
 
-1. Currently the `pr_comment` number does not include the pr reviews.
+<!-- Score = C_{issue-comment} + 2*C_{open-issue}\\
+\ \ \ \ \ \ +3*C_{open-pr}+4*C_{review-comment} \\
+\ \ \ \ \ \ + 2*C_{pr-merged}+ C_{watch} \\
+\ \ \ \ \ \ + 2*C_{fork} + 5 *C_{new-contributors}\\
+\ \ \ \ \ \ - 5* C_{issues-without-comment-for-5-days}\\
+\ \ \ \ \ \ - 7* C_{issues-without-comment-for-30-days}\\ -->
+
+详见[活跃度指标设计 v2](https://github.com/seeflood/github-weekly-statistics/issues/2)
