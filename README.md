@@ -2,7 +2,7 @@
 
 [English document](README-en.md)
 
-A tool to help you do growth hacking for your open source projects.
+A framework to help you do growth hacking for your open source projects.
 
 ## 要解决的问题
 

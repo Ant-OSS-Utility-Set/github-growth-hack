@@ -35,7 +35,7 @@ const dingTalkDao = {
     if (this.issues.length == 0) {
       // let content = `${this.keyword}目前没有舆情 issue ，大家回复很及时，奖励一人一辆特斯拉!\n`;
       let content = `${this.keyword}目前没有舆情 issue ，大家回复很及时，奖励一人一辆 SpaceX 火箭!\n`;
-      this.send(content, null, true, "*");
+      this.send(content, null, true, "*", false);
       this.sendImage(
         // "https://gw.alipayobjects.com/mdn/rms_6ac329/afts/img/A*PXPwR6je8-MAAAAAAAAAAAAAARQnAQ",
         "https://gw.alipayobjects.com/mdn/rms_6ac329/afts/img/A*J7MsQKCp-H8AAAAAAAAAAAAAARQnAQ",
@@ -73,10 +73,10 @@ const dingTalkDao = {
         content += `用户等了${issue.duration}天啦: ${issue.url}\n`;
       });
       // send
-      this.send(content, uid, false, project);
+      this.send(content, uid, false, project, true);
     });
   },
-  send: function (content, atUid, isAtAll, project) {
+  send: function (content, atUid, isAtAll, project, isWarning) {
     for (let group of this.dingGroups) {
       // 1.validate
       if (group.url == null || group.url.length == 0) {
@@ -91,6 +91,9 @@ const dingTalkDao = {
       let newContent = content;
       if (group.keyword != null && content.indexOf(group.keyword) < 0) {
         newContent = content.replace(this.keyword, group.keyword);
+      }
+      if (isWarning) {
+        content += group.specialWarningText;
       }
       // 2. send request
       fetch(group.url, {
