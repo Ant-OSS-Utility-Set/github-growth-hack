@@ -47,25 +47,78 @@ async function start(token, repos, mergeRepo, since, to) {
       promiseStarFork,
       promiseContributor,
       promiseOpenIssues,
-    ])
-      .then(function (results) {
-        const result = results[0];
-        result.new_stars = results[1].star;
-        result.new_forks = results[1].fork;
-        result.new_contributors = results[2].new_contributors;
-        result.openIssues = results[3];
-        result.nickName = nickName;
-        return result;
-      })
-      // calculate scores
-      // .then(calculateScore);
-      // .then(calculateScore_v2_add(result));
-      .then(function (result) {
-        return calculateScore_v2_sub(result, to);
-      });
+    ]).then(function (results) {
+      const result = results[0];
+      result.new_stars = results[1].star;
+      result.new_forks = results[1].fork;
+      result.new_contributors = results[2].new_contributors;
+      result.openIssues = results[3];
+      result.nickName = nickName;
+      result.owner = owner;
+      result.repo = repo;
+      return result;
+    });
+    // calculate scores
+    // .then(calculateScore);
+    // .then(calculateScore_v2_add(result));
+    // .then(function (result) {
+    //   return calculateScore_v2_sub(result, to);
+    // });
   }
   // await
   arr = await Promise.all(arr);
+  // shuffle
+  repo2project = new Map();
+  arr.forEach((project) => {
+    let key = project.owner + "/" + project.repo;
+    if (mergeRepo[key] == null) {
+      repo2project.set(key, project);
+    }
+  });
+  for (let i = 0; i < arr.length; i++) {
+    let project = arr[i];
+    let key = project.owner + "/" + project.repo;
+    if (mergeRepo[key] == null) {
+      continue;
+    }
+    console.log(key + " should be merged");
+    for (let issue of project.closeIssue) {
+      let targetKey = await mergeRepo[key](issue);
+      console.log(issue.html_url + " should be merged into " + targetKey);
+      if (repo2project.get(targetKey) == null) {
+        continue;
+      }
+      repo2project.get(targetKey).closeIssue.add(issue);
+    }
+    for (let issue of project.closePr) {
+      let targetKey = await mergeRepo[key](issue);
+      console.log(issue.html_url + " should be merged into " + targetKey);
+      if (repo2project.get(targetKey) == null) {
+        continue;
+      }
+      repo2project.get(targetKey).closePr.add(issue);
+    }
+    for (let issue of project.newPr) {
+      let targetKey = await mergeRepo[key](issue);
+      console.log(issue.html_url + " should be merged into " + targetKey);
+      if (repo2project.get(targetKey) == null) {
+        continue;
+      }
+      repo2project.get(targetKey).newPr.add(issue);
+    }
+    for (let issue of project.newIssue) {
+      let targetKey = await mergeRepo[key](issue);
+      console.log(issue.html_url + " should be merged into " + targetKey);
+      if (repo2project.get(targetKey) == null) {
+        continue;
+      }
+      repo2project.get(targetKey).newIssue.add(issue);
+    }
+  }
+  arr = [];
+  let i = 0;
+  // calculate scores
+  repo2project.forEach((v, k) => (arr[i++] = calculateScore_v2_sub(v, to)));
   // 3. sort
   arr.sort((a, b) => {
     return b.score - a.score;

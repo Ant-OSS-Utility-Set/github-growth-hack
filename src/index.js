@@ -47,12 +47,7 @@ let repos = [
 // (Optional) Merge different repos into one report
 // e.g.
 let mergeRepo = {
-  "layotto/*": (issue) => {
-    return {
-      owner: "mosn",
-      repo: "layotto",
-    };
-  },
+  "layotto/java-sdk": (issue) => "mosn/layotto",
 };
 
 // 4. (Optional) Modify dangerous issues related configs
