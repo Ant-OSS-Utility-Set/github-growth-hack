@@ -6,7 +6,7 @@ A framework to help you do growth hacking for your open source projects.
 
 ## 要解决的问题
 
-- 推动：如何推动项目 owner 投入技术人日到开源
+- 推动：如何推动项目维护者投入技术人日到开源
 - 提效：如何自动化一些琐事，节约一些技术人日？
 - 规划：给定有限的技术人日资源，应该做哪些事，以便（尽量）最大化收益？
 
