@@ -6,7 +6,10 @@
   "scripts": {
     "week": "node src/index.js",
     "month": "node src/index.js month",
-    "scan": "node src/index.js scan"
+    "scan": "node src/index.js scan",
+    "scan_dev": "node configs/scan_dev.js scan",
+    "scan_pre": "node configs/scan_pre.js scan",
+    "scan_prod": "node configs/scan_prod.js scan"
   },
   "author": "seeflood",
   "license": "ISC",

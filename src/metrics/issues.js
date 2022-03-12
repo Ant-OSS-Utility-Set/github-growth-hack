@@ -21,6 +21,14 @@ async function listOpenIssues(token, owner, repo) {
             login
           }
           createdAt
+          labels(last: 30) {
+            edges {
+              node {
+                # id
+                name
+              }
+            }
+          }
           comments(last: 30) {
             nodes {
               author {
@@ -39,7 +47,7 @@ async function listOpenIssues(token, owner, repo) {
       #   }
       # }
     }
-  }
+  }  
   `;
 
   return fetch("https://api.github.com/graphql", {
@@ -89,6 +97,13 @@ function filterOutDangerousIssues(issues, to) {
     if (someMemberHasReplied_graphql(issue)) {
       return;
     }
+    if (inWhiteList(issue)) {
+      return;
+    }
+    if (withSpecialLabels(issue)) {
+      console.log("ignore issue with special labels:" + issue.url);
+      return;
+    }
     // check baseline
     let createDay = moment(issue.createdAt, "YYYY-MM-DDTHH:mm:ssZ");
     if (baseline != null && baseline.isAfter(createDay)) {
@@ -114,6 +129,23 @@ function filterOutDangerousIssues(issues, to) {
     });
   });
   return result;
+}
+
+function inWhiteList(issue) {
+  return false;
+}
+
+function withSpecialLabels(issue) {
+  let found = false;
+  issue.labels.edges.forEach((labelNode) => {
+    if (
+      labelNode.node.name == "help wanted" ||
+      labelNode.node.name == "good first issue"
+    ) {
+      found = true;
+    }
+  });
+  return found;
 }
 
 function isCommunityIssue_graphql(issue) {

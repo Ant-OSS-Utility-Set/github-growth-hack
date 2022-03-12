@@ -30,8 +30,7 @@ function dispatch(
     monthly.generateReportForLastMonth(token, repos, mergeRepo);
   } else if (args[0] == "scan") {
     setDingTalkGroup(
-      dingTalkGroupConfig.url,
-      dingTalkGroupConfig.keyword,
+      dingTalkGroupConfig.groups,
       dingTalkGroupConfig.owners
     );
     scanner.scan(token, repos, since, to);

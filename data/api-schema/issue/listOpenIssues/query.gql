@@ -13,6 +13,14 @@ query listOpenIssues($owner: String!, $name: String!) {
           login
         }
         createdAt
+        labels(last: 30) {
+          edges {
+            node {
+              # id
+              name
+            }
+          }
+        }
         comments(last: 30) {
           nodes {
             author {

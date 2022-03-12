@@ -11,10 +11,11 @@ const dingTalkDao = {
   //   url: url,
   // }
   issues: [],
-  url: "",
-  keyword: "我们",
+  dingGroups: [],
+  keyword: "我们的社区",
   owners: new Map(),
   start: function () {},
+  // put the issue into the memory list
   insert: function (duration, project, title, url) {
     this.issues.push({
       duration: duration,
@@ -23,24 +24,28 @@ const dingTalkDao = {
       url: url,
     });
   },
+  // write to db
   commit: function () {
     // 1. check configuration
-    if (this.url.length == 0) {
+    if (this.dingGroups.length == 0) {
       // console.log("DingTalk url is empty");
       return;
     }
     // 2. check if all clear
     if (this.issues.length == 0) {
-      let content = `${this.keyword}目前没有舆情 issue ，大家回复很及时，奖励一人一辆特斯拉!\n`;
-      this.send(content, null, true);
+      // let content = `${this.keyword}目前没有舆情 issue ，大家回复很及时，奖励一人一辆特斯拉!\n`;
+      let content = `${this.keyword}目前没有舆情 issue ，大家回复很及时，奖励一人一辆 SpaceX 火箭!\n`;
+      this.send(content, null, true, "*");
       this.sendImage(
-        "https://gw.alipayobjects.com/mdn/rms_6ac329/afts/img/A*PXPwR6je8-MAAAAAAAAAAAAAARQnAQ",
+        // "https://gw.alipayobjects.com/mdn/rms_6ac329/afts/img/A*PXPwR6je8-MAAAAAAAAAAAAAARQnAQ",
+        "https://gw.alipayobjects.com/mdn/rms_6ac329/afts/img/A*J7MsQKCp-H8AAAAAAAAAAAAAARQnAQ",
         null,
-        false
+        false,
+        "*"
       );
       return;
     }
-    // 3. send warning
+    // 3. group by project
     // sort
     this.issues.sort((a, b) => {
       return b.duration - a.duration;
@@ -55,72 +60,117 @@ const dingTalkDao = {
       let list = project2issues.get(name);
       list.push(issue);
     });
+    // 4. send warning for each project
     // notify
-    project2issues.forEach((k, v) => {
-      // console.log(k, v);
-      let uid = this.owners.get(v);
+    project2issues.forEach((k, project) => {
+      // console.log(k, project, x);
+      let uid = this.owners.get(project);
       // concatenate messages.
-      let content = `@${uid} 老师，有空看下${v}的issue哈, ${this.keyword}需要你：\n `;
+      let content = `@${uid} 老师，有空看下${project}的issue哈, ${this.keyword}需要你：\n `;
       // console.log(v);
       // console.log(content);
       k.forEach((issue) => {
         content += `用户等了${issue.duration}天啦: ${issue.url}\n`;
       });
       // send
-      this.send(content, uid, false);
+      this.send(content, uid, false, project);
     });
   },
-  send: function (content, atUid, isAtAll) {
-    fetch(this.url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        at: {
-          atMobiles: [""],
-          atUserIds: [atUid],
-          isAtAll: isAtAll,
+  send: function (content, atUid, isAtAll, project) {
+    for (let group of this.dingGroups) {
+      // 1.validate
+      if (group.url == null || group.url.length == 0) {
+        console.log("DingTalk url is empty");
+        continue;
+      }
+      // check topic
+      if (!this.interested(group.topicProjects, project)) {
+        continue;
+      }
+      // check keyword in content
+      let newContent = content;
+      if (group.keyword != null && content.indexOf(group.keyword) < 0) {
+        newContent = content.replace(this.keyword, group.keyword);
+      }
+      // 2. send request
+      fetch(group.url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
-        text: {
-          content: content,
-        },
-        msgtype: "text",
-        title: "",
-      }),
-    })
-      // 3. parse
-      .then((res) => {
-        return res.json();
+        body: JSON.stringify({
+          at: {
+            atMobiles: [""],
+            atUserIds: [atUid],
+            isAtAll: isAtAll,
+          },
+          text: {
+            content: newContent,
+          },
+          msgtype: "text",
+          title: ``,
+        }),
       })
-      .then((json) => console.log(json));
+        // 3. parse
+        .then((res) => {
+          return res.json();
+        })
+        .then((json) => console.log(json));
+    }
   },
-  sendImage: function (imageUrl, atUid, isAtAll) {
-    fetch(this.url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        msgtype: "markdown",
-        markdown: {
-          title: `${this.keyword}`,
-          text: `![](${imageUrl}) \n`,
+  interested: function (topicProjects, project) {
+    if (topicProjects == null || topicProjects.length == "*") {
+      return true;
+    }
+    if (topicProjects.indexOf(project) >= 0) {
+      return true;
+    }
+    return false;
+  },
+
+  sendImage: function (imageUrl, atUid, isAtAll, project) {
+    for (let group of this.dingGroups) {
+      // 1.validate
+      if (group.url == null || group.url.length == 0) {
+        console.log("DingTalk url is empty");
+        continue;
+      }
+      // check topic
+      if (!this.interested(group.topicProjects, project)) {
+        continue;
+      }
+      // check keyword in content
+      let keyword = this.keyword;
+      if (group.keyword != null) {
+        keyword = group.keyword;
+      }
+      // 2. send request
+      fetch(group.url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
-        at: {
-          atMobiles: [""],
-          atUserIds: [atUid],
-          isAtAll: isAtAll,
-        },
-      }),
-    })
-      // 3. parse
-      .then((res) => {
-        return res.json();
+        body: JSON.stringify({
+          msgtype: "markdown",
+          markdown: {
+            title: keyword,
+            text: `![](${imageUrl}) \n`,
+          },
+          at: {
+            atMobiles: [""],
+            atUserIds: [atUid],
+            isAtAll: isAtAll,
+          },
+        }),
       })
-      .then((json) => console.log(json));
+        // 3. parse
+        .then((res) => {
+          return res.json();
+        })
+        .then((json) => console.log(json));
+    }
   },
 };
 
@@ -202,9 +252,8 @@ module.exports = {
     fsDAOImpl.commit();
     dingTalkDao.commit();
   },
-  setDingTalkGroup(url, keyword, owners) {
-    dingTalkDao.url = url;
-    dingTalkDao.keyword = keyword;
+  setDingTalkGroup(groups, owners) {
+    dingTalkDao.dingGroups = groups;
     dingTalkDao.owners = owners;
   },
 };

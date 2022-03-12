@@ -21,6 +21,7 @@ let to = utils.today();
 // Parameters in the repos array are:
 // [owner, repo , nickname_in_report(optional) ]
 let repos = [
+  ["mosn", "mosn"],
   ["mosn", "layotto"],
   ["layotto", "java-sdk", "layotto-java-sdk"],
   ["sofastack", "sofa-tracer"],
@@ -40,18 +41,23 @@ let repos = [
   ["sofastack", "sofa-bolt"],
   ["sofastack", "sofa-ark"],
   ["sofastack", "sofa-acts"],
-  ["sofastack", "sofa-jarslink"],
-  ["mosn", "mosn"],
+  // ["sofastack", "sofa-jarslink"],
 ];
 
 // (Optional) Merge different repos into one report
+// e.g.
 let mergeRepo = {
+  "layotto/*": (issue) => {
+    return {
+      owner: "mosn",
+      repo: "layotto",
+    };
+  },
 };
 
 // 4. (Optional) Modify dangerous issues related configs
 const dangerousIssuesConfig = {
   // shouldReplyInXDays: 4,
-
   // default
   // shouldReplyInXDays: 5,
   // mustReplyInXDays: 30,
@@ -59,8 +65,16 @@ const dangerousIssuesConfig = {
 
 // 5. (Optional) Send messages to dingtalk group
 const dingTalkGroupConfig = {
-  url:"",
-  keyword: "SOFAStack",
+  groups: [
+    {
+      // your dingtalk bot url with token as a url parameter
+      url: "",
+      // your dingtalk bot keyword
+      keyword: "SOFAStack",
+      // which project this dingtalk bot care about
+      topicProjects: "*",
+    },
+  ],
   owners: new Map(),
 };
 
