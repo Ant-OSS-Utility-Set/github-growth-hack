@@ -6,7 +6,7 @@ A tool to help you do growth hacking for your open source projects.
 
 - 推动：如何推动项目 owner 投入技术人日到开源
 - 提效：如何自动化一些琐事，节约一些技术人日？
-- 规划：应该让有限的技术人日做哪些事，以便（尽量）最大化收益？
+- 规划：给定有限的技术人日资源，应该做哪些事，以便（尽量）最大化收益？
 
 ## 功能
 
@@ -90,6 +90,13 @@ issue 被 assign 后，在 IM 群中提醒当事人。
 见[英文文档](README.md#usage) ，暂未翻译。
 
 ## 活跃度指标说明
+ <img src="https://user-images.githubusercontent.com/26001097/158004228-3bf9b244-f64f-4017-9827-6edbd981b66d.png" width = "200%" height = "200%" alt="score" align=center />
 
-![](https://user-images.githubusercontent.com/26001097/148624794-129025ba-6e05-4cef-a738-b9ee1dd90e88.png)
+<!-- Score = C_{issue-comment} + 2*C_{open-issue}\\
+\ \ \ \ \ \ +3*C_{open-pr}+4*C_{review-comment} \\
+\ \ \ \ \ \ + 2*C_{pr-merged}+ C_{watch} \\
+\ \ \ \ \ \ + 2*C_{fork} + 5 *C_{new-contributors}\\
+\ \ \ \ \ \ - 5* C_{issues-without-comment-for-5-days}\\
+\ \ \ \ \ \ - 7* C_{issues-without-comment-for-30-days}\\ -->
+
 详见[活跃度指标设计 v2](https://github.com/seeflood/github-weekly-statistics/issues/2)

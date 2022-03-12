@@ -5,11 +5,12 @@
 A tool to help you do growth hacking for your open source projects.
 
 ## Motivation
+
 This project wants to solve these problems:
 
 - Push
 
-How to make the  project owners invest more man-days in their open source projects?
+How to make the project owners invest more man-days in their open source projects?
 
 - Efficiency improvement
 
@@ -24,10 +25,11 @@ Given the limited resource of technical man-days,what should we do to (try to) m
 It can:
 
 1. Generate a weekly or monthly report for the github projects you care about
-  - calculate an "activity score" for every project
-  - use the scores to rank these projects
-  - send the report to IM group 
-  - have a dashboard to show them
+
+- calculate an "activity score" for every project
+- use the scores to rank these projects
+- send the report to IM group
+- have a dashboard to show them
 
 Screenshots of the dashboard and reports:
 
@@ -38,6 +40,8 @@ Screenshots of the dashboard and reports:
 ![](https://user-images.githubusercontent.com/26001097/156523792-34acd5ac-577e-4981-b026-3f26361e46db.png)
 
 2. Find those issues without any comments and warn you
+
+![](https://user-images.githubusercontent.com/26001097/157366957-6fb03357-97e0-47b3-80e5-e8b8c88ad96e.png)
 
 Screenshots of the warnings:
 ![](https://user-images.githubusercontent.com/26001097/156523399-c044b214-c454-46dd-a71f-77bde5b73121.png)
@@ -174,8 +178,8 @@ npm run month
 ### How is the 'score' calculated?
 
 Based on the [formula](http://oss.x-lab.info/github-insight-report-2020.pdf) proposed by [open-digger](https://github.com/X-lab2017/open-digger),but I add some new factors
-![how.png](https://user-images.githubusercontent.com/26001097/148624794-129025ba-6e05-4cef-a738-b9ee1dd90e88.png)
 
+ <img src="https://user-images.githubusercontent.com/26001097/158004228-3bf9b244-f64f-4017-9827-6edbd981b66d.png" width = "200%" height = "200%" alt="score" align=center />
 ## TODO
 
 1. Currently the `pr_comment` number does not include the pr reviews.
