@@ -30,6 +30,7 @@ A framework to help you do growth hacking for your open source projects.
 ![](https://user-images.githubusercontent.com/26001097/156523792-34acd5ac-577e-4981-b026-3f26361e46db.png)
 
 ### 2. 答疑治理
+![image](https://user-images.githubusercontent.com/26001097/158062747-f9e082c0-ad52-4089-b971-6ed821306f7c.png)
 
 #### 2.1. 将 IM 群的提问引流到 issue 区
 
