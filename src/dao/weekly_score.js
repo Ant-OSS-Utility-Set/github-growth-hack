@@ -1,8 +1,10 @@
 const fs = require("fs");
+const { getConn } = require("./mysql_conn");
 
 const weeklyScoreDAO = {
   start: function () {
     fsDAOImpl.start();
+    mysqlDAOImpl.start();
   },
   insert: function (
     rank,
@@ -12,7 +14,7 @@ const weeklyScoreDAO = {
     new_contributors,
     new_forks,
     new_pr,
-    closePr,
+    closed_pr,
     newIssue,
     closeIssue,
     prComment,
@@ -29,7 +31,24 @@ const weeklyScoreDAO = {
       new_contributors,
       new_forks,
       new_pr,
-      closePr,
+      closed_pr,
+      newIssue,
+      closeIssue,
+      prComment,
+      issueComment,
+      sinceReadable,
+      toReadable,
+      now
+    );
+    mysqlDAOImpl.insert(
+      rank,
+      score,
+      repoName,
+      new_stars,
+      new_contributors,
+      new_forks,
+      new_pr,
+      closed_pr,
       newIssue,
       closeIssue,
       prComment,
@@ -41,6 +60,7 @@ const weeklyScoreDAO = {
   },
   commit: function () {
     fsDAOImpl.commit();
+    mysqlDAOImpl.commit();
   },
 };
 const mysqlDAOImpl = {
@@ -53,16 +73,47 @@ const mysqlDAOImpl = {
     new_contributors,
     new_forks,
     new_pr,
-    closePr,
-    newIssue,
-    closeIssue,
-    prComment,
-    issueComment,
+    closed_pr,
+    new_issues,
+    closed_issues,
+    pr_comment,
+    issue_comment,
     sinceReadable,
     toReadable,
     now
-  ) {},
-  commit: function () {},
+  ) {
+    let conn = getConn();
+    if (conn == null) {
+      // console.log("mysql connection is null");
+      return;
+    }
+    sql =
+      `INSERT INTO \`github_repo_weekly\` (\`date_from\`, \`date_to\`, \`record_date\`, \`rank\`, \`score\`, \`owner\`, \`project\`, \`new_stars\`, \`new_contributors\`, \`new_forks\`, \`new_pr\`, \`closed_pr\`, \`new_issues\`, \`closed_issues\`, \`pr_comment\`, \`issue_comment\`)` +
+      ` VALUES ("${sinceReadable}","${toReadable}","${now}"` +
+      `,${rank},${score}` +
+      `,null,"${repoName}"` +
+      `,${new_stars},${new_contributors},${new_forks}` +
+      `,${new_pr},${closed_pr}` +
+      `,${new_issues},${closed_issues}` +
+      `,${pr_comment},${issue_comment})`;
+    conn.query(sql, function (err, result) {
+      if (err) {
+        console.log(err);
+        throw err;
+      }
+      // console.log("Result: " + result);
+    });
+  },
+  commit: function () {
+    let conn = getConn();
+    if (conn == null) {
+      // console.log("mysql connection is null");
+      return;
+    }
+    conn.commit(function (err) {
+      console.log(err);
+    });
+  },
 };
 const fsDAOImpl = {
   start: function () {
@@ -105,7 +156,7 @@ const fsDAOImpl = {
     new_contributors,
     new_forks,
     new_pr,
-    closePr,
+    closed_pr,
     newIssue,
     closeIssue,
     prComment,
@@ -114,7 +165,7 @@ const fsDAOImpl = {
     toReadable,
     now
   ) {
-    let content = `${rank}\t${score}\t${repoName}\t${new_stars}\t${new_contributors}\t${new_forks}\t${new_pr}\t${closePr}\t${newIssue}\t${closeIssue}\t${prComment}\t${issueComment}\t${sinceReadable}\t${toReadable}\t${now}`;
+    let content = `${rank}\t${score}\t${repoName}\t${new_stars}\t${new_contributors}\t${new_forks}\t${new_pr}\t${closed_pr}\t${newIssue}\t${closeIssue}\t${prComment}\t${issueComment}\t${sinceReadable}\t${toReadable}\t${now}`;
     console.log(content);
     // write files
     content = content.replace(/\t/g, ",");

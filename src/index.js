@@ -50,6 +50,14 @@ let mergeRepo = {
   "layotto/java-sdk": (issue) => "mosn/layotto",
 };
 
+// (Optional) Write the reports into Mysql
+let mysqlConfig = {
+  host: "",
+  user: "",
+  password: "",
+  database: "",
+};
+
 // 4. (Optional) Modify dangerous issues related configs
 const dangerousIssuesConfig = {
   // shouldReplyInXDays: 4,
@@ -85,6 +93,7 @@ dispatch(
   mergeRepo,
   since,
   to,
+  mysqlConfig,
   dangerousIssuesConfig,
   dingTalkGroupConfig
 );

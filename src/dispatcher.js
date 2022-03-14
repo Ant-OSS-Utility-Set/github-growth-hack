@@ -3,6 +3,7 @@ const { monthly } = require("./monthly");
 const { scanner } = require("./scanner");
 const { setDingTalkGroup } = require("./dao/dangerous_issue");
 const { shouldReplyInXDays, mustReplyInXDays } = require("./metrics/issues");
+const { setConfig } = require("./dao/mysql_conn");
 
 function dispatch(
   token,
@@ -10,6 +11,7 @@ function dispatch(
   mergeRepo,
   since,
   to,
+  mysqlConfig,
   dangerousIssuesConfig,
   dingTalkGroupConfig
 ) {
@@ -20,7 +22,8 @@ function dispatch(
     shouldReplyInXDays(dangerousIssuesConfig.shouldReplyInXDays);
     mustReplyInXDays(dangerousIssuesConfig.mustReplyInXDays);
   }
-
+  setConfig(mysqlConfig);
+  
   console.log("From: " + since);
   console.log("To: " + to);
 
@@ -29,10 +32,7 @@ function dispatch(
   if (args[0] == "month") {
     monthly.generateReportForLastMonth(token, repos, mergeRepo);
   } else if (args[0] == "scan") {
-    setDingTalkGroup(
-      dingTalkGroupConfig.groups,
-      dingTalkGroupConfig.owners
-    );
+    setDingTalkGroup(dingTalkGroupConfig.groups, dingTalkGroupConfig.owners);
     scanner.scan(token, repos, since, to);
   } else {
     weekly.generateScoreReport(token, repos, mergeRepo, since, to);
