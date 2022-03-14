@@ -9,12 +9,9 @@ var cfg = {
 var conn;
 
 module.exports = {
-  setConfig: function (config) {
+  setConfig: function (config, callback) {
     cfg = config;
-  },
-  getConn: function () {
     if (
-      conn == null &&
       cfg != null &&
       cfg.host != null &&
       cfg.host.length > 0 &&
@@ -28,8 +25,11 @@ module.exports = {
           throw err;
         }
         console.log("Connected!");
+        callback();
       });
     }
+  },
+  getConn: function () {
     return conn;
   },
 };

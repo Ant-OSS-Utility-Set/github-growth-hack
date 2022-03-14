@@ -110,9 +110,10 @@ const mysqlDAOImpl = {
       // console.log("mysql connection is null");
       return;
     }
-    conn.commit(function (err) {
-      console.log(err);
-    });
+    // conn.commit(function (err) {
+    //   console.log(err);
+    // });
+    conn.end();
   },
 };
 const fsDAOImpl = {

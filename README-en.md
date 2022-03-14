@@ -158,11 +158,26 @@ CREATE TABLE `github_repo_weekly` (
 
 3. Set up your Grafana dashboard using the config file [grafana/dashboard.json](grafana/dashboard.json)
 
-4. Run our script to generate Excel reports(see above).
+4. Set up the configuration in `src/index.js`(see above).
 
-5. Load the generated `report.csv` into the MYSQL table.
-   You can use any tool you like to finish this step.
-   Since I deploy MYSQL in alibaba cloud,I use the [DMS Console provided by alibaba cloud](https://dms.aliyun.com/) to load the csv data.
+Make sure you have set the mysql config:
+```
+// (Optional) Write the reports into Mysql
+let mysqlConfig = {
+  host: "",
+  user: "",
+  password: "",
+  database: "",
+};
+```
+
+5. Run it
+
+```bash
+# install packages
+npm install
+npm run week
+```
 
 6. Open your Grafana Dashboard:
    ![](grafana.png)
@@ -171,6 +186,12 @@ CREATE TABLE `github_repo_weekly` (
 
 ```bash
 npm run month
+```
+
+### Scan issues without any comments for at least 5 days
+
+```
+npm run scan
 ```
 
 ## Rationale

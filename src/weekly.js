@@ -58,16 +58,10 @@ async function start(token, repos, mergeRepo, since, to) {
       result.repo = repo;
       return result;
     });
-    // calculate scores
-    // .then(calculateScore);
-    // .then(calculateScore_v2_add(result));
-    // .then(function (result) {
-    //   return calculateScore_v2_sub(result, to);
-    // });
   }
   // await
   arr = await Promise.all(arr);
-  // shuffle
+  // shuffle and merge repos
   repo2project = new Map();
   arr.forEach((project) => {
     let key = project.owner + "/" + project.repo;

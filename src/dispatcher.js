@@ -18,12 +18,17 @@ function dispatch(
   if (token == null || token.length < 40) {
     throw new Error("Please set your github token in src/index.js");
   }
+  // set config
   if (dangerousIssuesConfig != null) {
     shouldReplyInXDays(dangerousIssuesConfig.shouldReplyInXDays);
     mustReplyInXDays(dangerousIssuesConfig.mustReplyInXDays);
   }
-  setConfig(mysqlConfig);
-  
+  setConfig(mysqlConfig, () =>
+    doDispatch(token, repos, mergeRepo, since, to, dingTalkGroupConfig)
+  );
+}
+
+function doDispatch(token, repos, mergeRepo, since, to, dingTalkGroupConfig) {
   console.log("From: " + since);
   console.log("To: " + to);
 
