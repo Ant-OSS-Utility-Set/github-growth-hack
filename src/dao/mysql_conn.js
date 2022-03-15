@@ -32,4 +32,20 @@ module.exports = {
   getConn: function () {
     return conn;
   },
+  query: function (sql) {
+    return new Promise(function (resolve, reject) {
+      conn.query(sql, function (err, result) {
+        if (err) {
+          reject(err);
+        } else {
+          // conn.query(sql, function (err, rows, fields) {
+          //   // release
+          //   conn.release();
+          //pass Promise
+          resolve({ err: err, rows: result });
+          // });
+        }
+      });
+    });
+  },
 };

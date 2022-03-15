@@ -1,5 +1,5 @@
 const fs = require("fs");
-const { getConn } = require("./mysql_conn");
+const { getConn, query } = require("./mysql_conn");
 
 const weeklyScoreDAO = {
   start: function () {
@@ -58,6 +58,9 @@ const weeklyScoreDAO = {
       now
     );
   },
+  list: function (owner, repo, weeks) {
+    return mysqlDAOImpl.list(owner, repo, weeks);
+  },
   commit: function () {
     fsDAOImpl.commit();
     mysqlDAOImpl.commit();
@@ -103,6 +106,21 @@ const mysqlDAOImpl = {
       }
       // console.log("Result: " + result);
     });
+  },
+  list: function (owner, repo, weeks) {
+    let conn = getConn();
+    if (conn == null) {
+      return [];
+    }
+    return query(
+      `SELECT * FROM \`github_repo_weekly\` where project='${repo}' order by id desc LIMIT 4`
+    );
+    // .then(function (data) {
+    //     if(data.rows[0]!=undefined)
+    //     {
+    //         return;
+    //     }
+    // })
   },
   commit: function () {
     let conn = getConn();

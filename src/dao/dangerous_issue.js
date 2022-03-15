@@ -76,7 +76,14 @@ const dingTalkDao = {
       this.send(content, uid, false, project, true);
     });
   },
-  send: function (content, atUid, isAtAll, project, isWarning) {
+  send: function (
+    content,
+    atUid,
+    isAtAll,
+    project,
+    isWarning,
+    isLivenessWarning
+  ) {
     for (let group of this.dingGroups) {
       // 1.validate
       if (group.url == null || group.url.length == 0) {
@@ -93,7 +100,10 @@ const dingTalkDao = {
         newContent = content.replace(this.keyword, group.keyword);
       }
       if (isWarning) {
-        content += group.specialWarningText;
+        newContent += group.specialWarningText;
+      }
+      if (isLivenessWarning) {
+        newContent += group.livenessWarningText;
       }
       // 2. send request
       fetch(group.url, {
@@ -123,7 +133,11 @@ const dingTalkDao = {
     }
   },
   interested: function (topicProjects, project) {
-    if (topicProjects == null || topicProjects.length == "*") {
+    if (
+      topicProjects == null ||
+      topicProjects.length == 0 ||
+      topicProjects == "*"
+    ) {
       return true;
     }
     if (topicProjects.indexOf(project) >= 0) {
@@ -258,5 +272,8 @@ module.exports = {
   setDingTalkGroup(groups, owners) {
     dingTalkDao.dingGroups = groups;
     dingTalkDao.owners = owners;
+  },
+  getDingTalkDao() {
+    return dingTalkDao;
   },
 };
