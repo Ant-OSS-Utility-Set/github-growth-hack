@@ -70,7 +70,7 @@ const scanner = {
                   `请在一周内整改，否则将启动垃圾回收程序，对项目自动归档！\n`;
                 return dangerousIssueDAO
                   .getDingTalkDao()
-                  .send(content, null, false, health.repo, false, true);
+                  .send(content, null, false, health.repo, false, "liveness");
               }
             });
         });
@@ -87,7 +87,7 @@ const scanner = {
           `- 连续4周活跃度小于20\n`;
         dangerousIssueDAO
           .getDingTalkDao()
-          .send(content, null, false, "*", false, true);
+          .send(content, null, false, "*", false, "liveness");
       }
       dangerousIssueDAO.commit();
       weeklyScoreDAO.commit();

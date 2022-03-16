@@ -76,7 +76,7 @@ const dingTalkGroupConfig = {
       keyword: "SOFAStack",
       // which project this dingtalk bot care about
       topicProjects: "*",
-      specialWarningText: "",
+      issueWarningText: "",
     },
   ],
   owners: new Map(),

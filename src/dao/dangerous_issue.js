@@ -35,7 +35,7 @@ const dingTalkDao = {
     if (this.issues.length == 0) {
       // let content = `${this.keyword}目前没有舆情 issue ，大家回复很及时，奖励一人一辆特斯拉!\n`;
       let content = `${this.keyword}目前没有舆情 issue ，大家回复很及时，奖励一人一辆 SpaceX 火箭!\n`;
-      this.send(content, null, true, "*", false);
+      this.send(content, null, true, "*", false, "issue");
       this.sendImage(
         // "https://gw.alipayobjects.com/mdn/rms_6ac329/afts/img/A*PXPwR6je8-MAAAAAAAAAAAAAARQnAQ",
         "https://gw.alipayobjects.com/mdn/rms_6ac329/afts/img/A*J7MsQKCp-H8AAAAAAAAAAAAAARQnAQ",
@@ -73,25 +73,50 @@ const dingTalkDao = {
         content += `用户等了${issue.duration}天啦: ${issue.url}\n`;
       });
       // send
-      this.send(content, uid, false, project, true);
+      this.send(content, uid, false, project, true, "issue");
     });
   },
-  send: function (
-    content,
-    atUid,
-    isAtAll,
-    project,
-    isWarning,
-    isLivenessWarning
-  ) {
+  isIgnoredTopicType: function (topicTypesIgnore, messageType) {
+    if (topicTypesIgnore != null && topicTypesIgnore.length > 0) {
+      for (let topicType of topicTypesIgnore) {
+        if (topicType == "*" || topicType == messageType) {
+          return true;
+        }
+      }
+    }
+    return false;
+  },
+  interestedTopicType: function (topicTypesOnly, messageType) {
+    if (topicTypesOnly == null || topicTypesOnly.length == 0) {
+      return true;
+    }
+    for (let topicType of topicTypesOnly) {
+      if (topicType == "*" || topicType == messageType) {
+        return true;
+      }
+    }
+    return false;
+  },
+  send: function (content, atUid, isAtAll, project, isNegative, topicType) {
+    const topicTypeLiveness = "liveness";
+    const topicTypeIssue = "issue";
+
     for (let group of this.dingGroups) {
       // 1.validate
       if (group.url == null || group.url.length == 0) {
         console.log("DingTalk url is empty");
         continue;
       }
-      // check topic
+      // check topic projects
       if (!this.interested(group.topicProjects, project)) {
+        continue;
+      }
+      // check topicTypesIgnore
+      if (this.isIgnoredTopicType(group.topicTypesIgnore, topicType)) {
+        continue;
+      }
+      // check topicTypesOnly
+      if (!this.interestedTopicType(group.topicTypesOnly, topicType)) {
         continue;
       }
       // check keyword in content
@@ -99,11 +124,19 @@ const dingTalkDao = {
       if (group.keyword != null && content.indexOf(group.keyword) < 0) {
         newContent = content.replace(this.keyword, group.keyword);
       }
-      if (isWarning) {
-        newContent += group.specialWarningText;
-      }
-      if (isLivenessWarning) {
-        newContent += group.livenessWarningText;
+      // append text
+      if (topicType == topicTypeIssue) {
+        if (isNegative) {
+          newContent += this.nullToEmpty(group.issueWarningText);
+        } else {
+          newContent += this.nullToEmpty(group.issueCongratulationText);
+        }
+      } else if (topicType == topicTypeLiveness) {
+        if (isNegative) {
+          newContent += this.nullToEmpty(group.livenessWarningText);
+        } else {
+          newContent += this.nullToEmpty(group.livenessCongratulationText);
+        }
       }
       // 2. send request
       fetch(group.url, {
@@ -131,6 +164,12 @@ const dingTalkDao = {
         })
         .then((json) => console.log(json));
     }
+  },
+  nullToEmpty(str) {
+    if (str == null) {
+      return "";
+    }
+    return str;
   },
   interested: function (topicProjects, project) {
     if (
