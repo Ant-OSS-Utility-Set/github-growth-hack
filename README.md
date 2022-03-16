@@ -108,6 +108,9 @@ issue 被 assign 后，在 IM 群中提醒当事人。
   - IM 气氛组，对话、欢迎、活跃气氛
 需要调研，因为机器人可能说错话、有政治不正确风险，可能只适合熟人小群
 
+##### 引流数据分析
+定期分析 [仓库 uv 和 star 率](https://github.com/seeflood/github-growth-hack/issues/2#issuecomment-1013903441) ，从而分析运营活动的引流效果；
+
 ##### Readiness check
 对项目进行健康检查，判断是否达到“适合运营宣传”的标准
 
