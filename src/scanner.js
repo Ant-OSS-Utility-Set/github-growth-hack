@@ -8,6 +8,7 @@ const scanner = {
     dangerousIssueDAO.start();
     // 2. collect data
     let arr = [];
+    let allPassLivenessCheck = true;
     for (let i = 0; i < repos.length; i++) {
       const owner = repos[i][0];
       const repo = repos[i][1];
@@ -59,12 +60,14 @@ const scanner = {
                 }
               }
               if (!success) {
+                allPassLivenessCheck = false;
                 // warning
-                let content = `${health.repo} 健康检查 (liveness check) 失败!\n
-                该项目满足以下条件，被归类为“腐烂级”项目：\n
-                - 存在大于30天未回复的 issue \n
-                - 连续4周活跃度小于20\n
-                请在一周内整改，否则将启动垃圾回收程序，对项目自动归档！\n`;
+                let content =
+                  `${health.repo} 健康检查 (liveness check) 失败!\n` +
+                  `该项目满足以下条件，被归类为“腐烂级”项目：\n` +
+                  `- 存在大于30天未回复的 issue \n` +
+                  `- 连续4周活跃度小于20\n` +
+                  `请在一周内整改，否则将启动垃圾回收程序，对项目自动归档！\n`;
                 return dangerousIssueDAO
                   .getDingTalkDao()
                   .send(content, null, false, health.repo, false, true);
@@ -74,6 +77,18 @@ const scanner = {
     }
     // 3. commit
     Promise.all(arr).then((results) => {
+      if (allPassLivenessCheck) {
+        // congratulations!
+        let content =
+          `活跃度检查 (liveness check)结果：所有项目通过了活跃度检查!\n` +
+          `\n` +
+          `注：liveness check会检查每个项目的健康情况，如果满足下列条件会被归类为“腐烂级”项目：\n` +
+          `- 存在大于30天未回复的 issue \n` +
+          `- 连续4周活跃度小于20\n`;
+        dangerousIssueDAO
+          .getDingTalkDao()
+          .send(content, null, false, "*", false, true);
+      }
       dangerousIssueDAO.commit();
       weeklyScoreDAO.commit();
     });
