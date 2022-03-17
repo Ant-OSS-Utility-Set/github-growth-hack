@@ -82,8 +82,8 @@ const dingTalkGroupConfig = {
   owners: new Map(),
 };
 
-dingTalkGroupConfig.owners.set("project name", "dingtalk uid");
-dingTalkGroupConfig.owners.set("layotto", "193555");
+dingTalkGroupConfig.owners.set("project name", ["dingtalk uid"]);
+dingTalkGroupConfig.owners.set("layotto", ["193555"]);
 
 // 5. Let's start!
 // Belows are startup code. You don't have to modify them

@@ -66,7 +66,11 @@ const dingTalkDao = {
       // console.log(k, project, x);
       let uid = this.owners.get(project);
       // concatenate messages.
-      let content = `@${uid} 老师，有空看下${project}的issue哈, ${this.keyword}需要你：\n `;
+      let content = "";
+      uid.forEach((id) => {
+        content += `@${id} `;
+      });
+      content += `老师，有空看下${project}的issue哈, ${this.keyword}需要你：\n `;
       // console.log(v);
       // console.log(content);
       k.forEach((issue) => {
@@ -138,6 +142,10 @@ const dingTalkDao = {
           newContent += this.nullToEmpty(group.livenessCongratulationText);
         }
       }
+      let uidArr = [];
+      if (atUid != null) {
+        uidArr = atUid;
+      }
       // 2. send request
       fetch(group.url, {
         method: "POST",
@@ -148,7 +156,7 @@ const dingTalkDao = {
         body: JSON.stringify({
           at: {
             atMobiles: [""],
-            atUserIds: [atUid],
+            atUserIds: uidArr,
             isAtAll: isAtAll,
           },
           text: {

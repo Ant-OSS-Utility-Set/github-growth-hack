@@ -24,9 +24,12 @@ module.exports = {
           console.log(err);
           throw err;
         }
-        console.log("Connected!");
+        console.log("Mysql connected!");
         callback();
       });
+    } else {
+      console.log("no mysql config!");
+      callback();
     }
   },
   getConn: function () {
