@@ -34,14 +34,18 @@ const dingTalkDao = {
     // 2. check if all clear
     if (this.issues.length == 0) {
       // let content = `${this.keyword}目前没有舆情 issue ，大家回复很及时，奖励一人一辆特斯拉!\n`;
-      let content = `${this.keyword}目前没有舆情 issue ，大家回复很及时，奖励一人一辆 SpaceX 火箭!\n`;
+      // let content = `${this.keyword}目前没有舆情 issue ，大家回复很及时，奖励一人一辆 SpaceX 火箭!\n`;
+      let content = `${this.keyword}目前没有舆情 issue ，大家回复很及时，奖励一人一个 脑机接口!\n`;
       this.send(content, null, true, "*", false, "issue");
       this.sendImage(
         // "https://gw.alipayobjects.com/mdn/rms_6ac329/afts/img/A*PXPwR6je8-MAAAAAAAAAAAAAARQnAQ",
-        "https://gw.alipayobjects.com/mdn/rms_6ac329/afts/img/A*J7MsQKCp-H8AAAAAAAAAAAAAARQnAQ",
+        // "https://gw.alipayobjects.com/mdn/rms_6ac329/afts/img/A*J7MsQKCp-H8AAAAAAAAAAAAAARQnAQ",
+        "https://img-blog.csdnimg.cn/img_convert/15b784912f4511cbb9d35bb2c1bf5e91.png",
         null,
         false,
-        "*"
+        "*",
+        false,
+        "issue"
       );
       return;
     }
@@ -193,15 +197,30 @@ const dingTalkDao = {
     return false;
   },
 
-  sendImage: function (imageUrl, atUid, isAtAll, project) {
+  sendImage: function (
+    imageUrl,
+    atUid,
+    isAtAll,
+    project,
+    isNegative,
+    topicType
+  ) {
     for (let group of this.dingGroups) {
       // 1.validate
       if (group.url == null || group.url.length == 0) {
         console.log("DingTalk url is empty");
         continue;
       }
-      // check topic
+      // check topic project
       if (!this.interested(group.topicProjects, project)) {
+        continue;
+      }
+      // check topicTypesIgnore
+      if (this.isIgnoredTopicType(group.topicTypesIgnore, topicType)) {
+        continue;
+      }
+      // check topicTypesOnly
+      if (!this.interestedTopicType(group.topicTypesOnly, topicType)) {
         continue;
       }
       // check keyword in content
