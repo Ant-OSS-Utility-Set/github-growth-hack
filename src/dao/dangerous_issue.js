@@ -33,20 +33,30 @@ const dingTalkDao = {
     }
     // 2. check if all clear
     if (this.issues.length == 0) {
-      // let content = `${this.keyword}目前没有舆情 issue ，大家回复很及时，奖励一人一辆特斯拉!\n`;
-      // let content = `${this.keyword}目前没有舆情 issue ，大家回复很及时，奖励一人一辆 SpaceX 火箭!\n`;
-      let content = `${this.keyword}目前没有舆情 issue ，大家回复很及时，奖励一人一个 脑机接口!\n`;
+      let awards = [
+        {
+          content: `${this.keyword}目前没有舆情 issue ，大家回复很及时，奖励一人一辆特斯拉!\n`,
+          img: "https://gw.alipayobjects.com/mdn/rms_6ac329/afts/img/A*PXPwR6je8-MAAAAAAAAAAAAAARQnAQ",
+        },
+        {
+          content: `${this.keyword}目前没有舆情 issue ，大家回复很及时，奖励一人一辆 SpaceX 火箭!\n`,
+          img: "https://gw.alipayobjects.com/mdn/rms_6ac329/afts/img/A*J7MsQKCp-H8AAAAAAAAAAAAAARQnAQ",
+        },
+        {
+          content: `${this.keyword}目前没有舆情 issue ，大家回复很及时，奖励一人一个 脑机接口!\n`,
+          img: "https://img-blog.csdnimg.cn/img_convert/15b784912f4511cbb9d35bb2c1bf5e91.png",
+        },
+        {
+          content: `${this.keyword}目前没有舆情 issue ，大家回复很及时，奖励一人一罐 可口可乐!\n`,
+          img: "https://gw.alipayobjects.com/mdn/rms_6ac329/afts/img/A*v6SsRKjmOWYAAAAAAAAAAAAAARQnAQ",
+        },
+      ];
+      // give a random award!
+      let idx = Math.floor(Math.random() * awards.length);
+      let content = awards[idx].content;
+      let img = awards[idx].img;
       this.send(content, null, true, "*", false, "issue");
-      this.sendImage(
-        // "https://gw.alipayobjects.com/mdn/rms_6ac329/afts/img/A*PXPwR6je8-MAAAAAAAAAAAAAARQnAQ",
-        // "https://gw.alipayobjects.com/mdn/rms_6ac329/afts/img/A*J7MsQKCp-H8AAAAAAAAAAAAAARQnAQ",
-        "https://img-blog.csdnimg.cn/img_convert/15b784912f4511cbb9d35bb2c1bf5e91.png",
-        null,
-        false,
-        "*",
-        false,
-        "issue"
-      );
+      this.sendImage(img, null, false, "*", false, "issue");
       return;
     }
     // 3. group by project
