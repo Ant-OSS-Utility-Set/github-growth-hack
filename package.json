@@ -7,6 +7,7 @@
     "week": "node src/index.js",
     "month": "node src/index.js month",
     "scan": "node src/index.js scan",
+    "week_dev": "node configs/scan_dev.js",
     "week_prod": "node configs/scan_prod.js",
     "month_prod": "node configs/scan_prod.js month",
     "scan_dev": "node configs/scan_dev.js scan",
