@@ -167,15 +167,16 @@ async function moveIssuesToOtherRepo(
   getDestination
 ) {
   for (let issue of issuesToCheck) {
+    let targetKey;
     try {
-      let targetKey = await mergeFunc(issue);
+      targetKey = await mergeFunc(issue);
     } catch (error) {
       console.error("mergeFunc error: " + error);
       // to accelerate, one error will terminate the merge process
       return;
     }
     console.log(issue.html_url + " should be merged into " + targetKey);
-    if (repo2project.get(targetKey) == null) {
+    if (targetKey == null || repo2project.get(targetKey) == null) {
       continue;
     }
     getDestination(repo2project.get(targetKey)).add(issue);
