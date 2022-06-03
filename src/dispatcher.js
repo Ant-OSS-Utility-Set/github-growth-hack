@@ -15,6 +15,7 @@ function dispatch(
   dangerousIssuesConfig,
   dingTalkGroupConfig
 ) {
+  // check config
   if (token == null || token.length < 40) {
     throw new Error("Please set your github token in src/index.js");
   }

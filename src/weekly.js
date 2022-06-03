@@ -35,13 +35,13 @@ async function start(token, repos, mergeRepo, since, to) {
     if (nickName == null) {
       nickName = repo;
     }
-    // fetch data
+    // 2.1. fetch data
     const promiseIssue = collectIssueData(owner, repo, since);
     const promiseStarFork = countStarsAndForks(token, owner, repo, since);
     const promiseContributor = countNewContributors(token, owner, repo, since);
     const promiseOpenIssues = listOpenIssues(token, owner, repo);
 
-    // merge data
+    // 2.2. merge data for every repo
     arr[i] = Promise.all([
       promiseIssue,
       promiseStarFork,
@@ -61,7 +61,7 @@ async function start(token, repos, mergeRepo, since, to) {
   }
   // await
   arr = await Promise.all(arr);
-  // shuffle and merge repos
+  // 2.3. shuffle and merge repos
   repo2project = new Map();
   arr.forEach((project) => {
     let key = project.owner + "/" + project.repo;
@@ -76,38 +76,37 @@ async function start(token, repos, mergeRepo, since, to) {
       continue;
     }
     console.log(key + " should be merged");
-    for (let issue of project.closeIssue) {
-      let targetKey = await mergeRepo[key](issue);
-      console.log(issue.html_url + " should be merged into " + targetKey);
-      if (repo2project.get(targetKey) == null) {
-        continue;
-      }
-      repo2project.get(targetKey).closeIssue.add(issue);
-    }
-    for (let issue of project.closePr) {
-      let targetKey = await mergeRepo[key](issue);
-      console.log(issue.html_url + " should be merged into " + targetKey);
-      if (repo2project.get(targetKey) == null) {
-        continue;
-      }
-      repo2project.get(targetKey).closePr.add(issue);
-    }
-    for (let issue of project.newPr) {
-      let targetKey = await mergeRepo[key](issue);
-      console.log(issue.html_url + " should be merged into " + targetKey);
-      if (repo2project.get(targetKey) == null) {
-        continue;
-      }
-      repo2project.get(targetKey).newPr.add(issue);
-    }
-    for (let issue of project.newIssue) {
-      let targetKey = await mergeRepo[key](issue);
-      console.log(issue.html_url + " should be merged into " + targetKey);
-      if (repo2project.get(targetKey) == null) {
-        continue;
-      }
-      repo2project.get(targetKey).newIssue.add(issue);
-    }
+    // merge closeIssue
+    await moveIssuesToOtherRepo(
+      project.closeIssue,
+      mergeRepo[key],
+      repo2project,
+      (project) => project.closeIssue
+    );
+
+    // merge closePr
+    await moveIssuesToOtherRepo(
+      project.closePr,
+      mergeRepo[key],
+      repo2project,
+      (project) => project.closePr
+    );
+
+    // merge newPr
+    await moveIssuesToOtherRepo(
+      project.newPr,
+      mergeRepo[key],
+      repo2project,
+      (project) => project.newPr
+    );
+
+    // merge newIssue
+    await moveIssuesToOtherRepo(
+      project.newIssue,
+      mergeRepo[key],
+      repo2project,
+      (project) => project.newIssue
+    );
   }
   arr = [];
   let i = 0;
@@ -161,6 +160,28 @@ async function start(token, repos, mergeRepo, since, to) {
   dangerousIssueDAO.commit();
 }
 
+async function moveIssuesToOtherRepo(
+  issuesToCheck,
+  mergeFunc,
+  repo2project,
+  getDestination
+) {
+  for (let issue of issuesToCheck) {
+    try {
+      let targetKey = await mergeFunc(issue);
+    } catch (error) {
+      console.error("mergeFunc error: " + error);
+      // to accelerate, one error will terminate the merge process
+      return;
+    }
+    console.log(issue.html_url + " should be merged into " + targetKey);
+    if (repo2project.get(targetKey) == null) {
+      continue;
+    }
+    getDestination(repo2project.get(targetKey)).add(issue);
+  }
+}
+
 function calculateScore(result) {
   // console.log(result);
   let score =
@@ -178,6 +199,7 @@ function calculateScore(result) {
   return result;
 }
 
+// deprecated.
 function calculateScore_v2_add(result) {
   result = calculateScore(result);
 
