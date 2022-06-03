@@ -130,6 +130,8 @@ issue 被 assign 后，在 IM 群中提醒当事人。
   - [ ] 统计月活跃贡献者(MAC)自动入库
   - [ ] 自动生成周报图片、群发
   - [ ] 自动生成月报图片、群发
+  - [ ] 一条命令部署
+  - [ ] grafana 配置更新，增强功能
 
 ### P1
 
@@ -178,6 +180,13 @@ issue 被 assign 后，在 IM 群中提醒当事人。
 ### P2
 
 - 帮助新项目快速搭建一套 github workflow
+  - [ ] workflow for 文档治理
+  - [ ] workflow for golang 
+  - [ ] workflow for java
+  - [ ] workflow for chores
+
+- 帮助新项目快速搭建一套 make 脚本，方便本地开发
+  - [ ] make 模板
 
 - 专家建议：自动分析瓶颈指标，给出建议
 
