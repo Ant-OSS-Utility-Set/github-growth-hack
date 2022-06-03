@@ -7,3 +7,4 @@ report的副本.csv
 ignore/
 *.csv
 configs
+.DS_Store
