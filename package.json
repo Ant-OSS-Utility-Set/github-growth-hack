@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "test":"",
     "week": "node src/index.js",
     "month": "node src/index.js month",
     "scan": "node src/index.js scan",
