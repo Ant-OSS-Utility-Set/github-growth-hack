@@ -79,6 +79,9 @@ const dingTalkDao = {
     project2issues.forEach((k, project) => {
       // console.log(k, project, x);
       let uid = this.owners.get(project);
+      if (uid == null || uid.length == 0) {
+        return;
+      }
       // concatenate messages.
       let content = "";
       uid.forEach((id) => {
