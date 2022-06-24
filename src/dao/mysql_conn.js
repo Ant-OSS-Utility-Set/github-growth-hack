@@ -37,6 +37,10 @@ module.exports = {
   },
   query: function (sql) {
     return new Promise(function (resolve, reject) {
+      if (conn == null) {
+        resolve({ err: null, rows: [] });
+        return;
+      }
       conn.query(sql, function (err, result) {
         if (err) {
           reject(err);

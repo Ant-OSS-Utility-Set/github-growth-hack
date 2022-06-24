@@ -108,10 +108,6 @@ const mysqlDAOImpl = {
     });
   },
   list: function (owner, repo, weeks) {
-    let conn = getConn();
-    if (conn == null) {
-      return [];
-    }
     return query(
       `SELECT * FROM \`github_repo_weekly\` where project='${repo}' order by id desc LIMIT 4`
     );
