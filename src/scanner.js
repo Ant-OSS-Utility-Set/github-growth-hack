@@ -14,7 +14,7 @@ const scanner = {
       const repo = repos[i][1];
       // fetch data
       arr[i] = listDangerousOpenIssues(token, owner, repo, to)
-        // write
+        // write dangerous issues
         .then(function (resultsArray) {
           let health = {
             owner: owner,
@@ -46,6 +46,7 @@ const scanner = {
           // TODO: trigger liveness check
           const weeksMatter = 4;
           const livenessBaseline = 20;
+          // query scores in history
           let scores = weeklyScoreDAO.list(
             health.owner,
             health.repo,
