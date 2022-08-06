@@ -1,5 +1,6 @@
 const fetch = require("node-fetch");
 
+// https://open.dingtalk.com/document/group/custom-robot-access
 const dingTalkDao = {
   send: function (groupUrls, content, title, atUid, isAtAll) {
     for (let group of groupUrls) {
@@ -39,6 +40,7 @@ const dingTalkDao = {
         .then((json) => console.log(json));
     }
   },
+
   sendMarkdown: function (groupUrls, content, title, atUid, isAtAll) {
     for (let group of groupUrls) {
       // 1.validate
