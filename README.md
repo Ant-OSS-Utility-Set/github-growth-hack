@@ -83,7 +83,7 @@ issue 被 assign 后，在 IM 群中提醒当事人。
 ![image](https://user-images.githubusercontent.com/26001097/157793252-e07aec12-df0d-4128-b790-0d31f1bd31a3.png)
 
 ### 3. 活跃度检查: liveness check
-![image](https://user-images.githubusercontent.com/26001097/183243558-d4c59600-e232-40ae-8fae-a48f22263437.png)
+ <img src="https://user-images.githubusercontent.com/26001097/183243558-d4c59600-e232-40ae-8fae-a48f22263437.png" width = "50%" height = "50%" alt="welcome" align=center />
 
 机器人会定期对所有开源项目进行“活跃度检查”，如果项目长期缺少维护、不处理舆情 issue，会被自动判定为“腐烂级”项目。
 
@@ -104,16 +104,16 @@ issue 被 assign 后，在 IM 群中提醒当事人。
 - 开周会前，自动询问当事人进展
 - 写周报前，自动询问当事人进展
 
-![image](https://user-images.githubusercontent.com/26001097/183242835-dc46c836-6f3c-48b3-9d80-ade6ebf40492.png)
+ <img src="https://user-images.githubusercontent.com/26001097/183242835-dc46c836-6f3c-48b3-9d80-ade6ebf40492.png" width = "50%" height = "50%" alt="welcome" align=center />
 
 - 每周组织社区会议
 
-![image](https://user-images.githubusercontent.com/26001097/183243067-3d8ee469-b565-4b64-83b0-6e5dcb97b2f2.png)
+ <img src="https://user-images.githubusercontent.com/26001097/183243067-3d8ee469-b565-4b64-83b0-6e5dcb97b2f2.png" width = "50%" height = "50%" alt="welcome" align=center />
 
-![image](https://user-images.githubusercontent.com/26001097/183243113-ffc68e99-554b-420f-a7b5-82dbb795083a.png)
+ <img src="https://user-images.githubusercontent.com/26001097/183243113-ffc68e99-554b-420f-a7b5-82dbb795083a.png" width = "50%" height = "50%" alt="welcome" align=center />
 
 
-- [ ] 集成进 github issues, 自动追踪已 assign 的 issue
+- [ ] 集成进 github issues, 自动追踪已 assign 的高优先级 issue
 
 ## 使用文档
 
