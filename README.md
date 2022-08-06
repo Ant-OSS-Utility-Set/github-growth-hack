@@ -23,9 +23,11 @@ A framework to help you do growth hacking for your open source projects.
 
 ![](https://user-images.githubusercontent.com/26001097/157366957-6fb03357-97e0-47b3-80e5-e8b8c88ad96e.png)
 
-大盘数据可以生成 excel，可以推送到 IM 群。
+大盘数据可以生成 excel：
 
- <img src="excel.png" width = "50%" height = "50%" alt="welcome" align=center />
+ <img src="https://user-images.githubusercontent.com/26001097/183243770-fb9a9805-f9e3-4750-b551-c29a46385248.png" width = "50%" height = "50%" alt="welcome" align=center />
+
+也可以推送到 IM 群：
 
 ![](https://user-images.githubusercontent.com/26001097/156523792-34acd5ac-577e-4981-b026-3f26361e46db.png)
 
