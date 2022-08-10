@@ -113,7 +113,7 @@ issue 被 assign 后，在 IM 群中提醒当事人。
  <img src="https://user-images.githubusercontent.com/26001097/183243113-ffc68e99-554b-420f-a7b5-82dbb795083a.png" width = "50%" height = "50%" alt="welcome" align=center />
 
 
-- [ ] 集成进 github issues, 自动追踪已 assign 的高优先级 issue
+- [ ] 集成进 github issues, 自动追踪已 assign 的高优先级 issue, 在 issue 下询问进度或者在 IM 内询问进度。
 
 ## 使用文档
 
