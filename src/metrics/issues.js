@@ -141,7 +141,8 @@ function withSpecialLabels(issue) {
     if (
       labelNode.node.name == "help wanted" ||
       labelNode.node.name == "good first issue" ||
-      labelNode.node.name == "WIP"
+      labelNode.node.name == "WIP" ||
+      labelNode.node.name == "wip"
     ) {
       found = true;
     }
