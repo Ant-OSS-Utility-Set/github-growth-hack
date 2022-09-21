@@ -202,6 +202,3 @@ Based on the [formula](http://oss.x-lab.info/github-insight-report-2020.pdf) pro
 
  <img src="https://user-images.githubusercontent.com/26001097/158004228-3bf9b244-f64f-4017-9827-6edbd981b66d.png" width = "200%" height = "200%" alt="score" align=center />
  
-## TODO
-
-1. Currently the `pr_comment` number does not include the pr reviews.
