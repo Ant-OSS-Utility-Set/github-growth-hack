@@ -130,7 +130,7 @@ issue 被 assign 后，在 IM 群中提醒当事人。
 \ \ \ \ \ \ - 5* C_{issues-without-comment-for-5-days}\\
 \ \ \ \ \ \ - 7* C_{issues-without-comment-for-30-days}\\ -->
 
-详见[活跃度指标设计 v2](https://github.com/seeflood/github-weekly-statistics/issues/2)
+详见[活跃度指标设计 v2](https://github.com/seeflood/github-growth-hack/issues/2)
 
 
 ## Roadmap

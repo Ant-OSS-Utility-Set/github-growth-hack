@@ -55,7 +55,7 @@ Screenshots of the warnings:
 0. clone the repo
 
 ```bash
-git clone https://github.com/seeflood/github-weekly-statistics.git
+git clone https://github.com/seeflood/github-growth-hack.git
 ```
 
 1. Modify the configuration options in `src/index.js`
