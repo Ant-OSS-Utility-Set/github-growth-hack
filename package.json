@@ -1,8 +1,8 @@
 {
-  "name": "github-weekly-statistics",
+  "name": "github-growth-hack",
   "version": "0.0.2",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "",
     "week": "node src/index.js",
