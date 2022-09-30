@@ -19,139 +19,6 @@
   "links": [],
   "panels": [
     {
-      "collapsed": false,
-      "datasource": null,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
-      "id": 4,
-      "panels": [],
-      "title": "Row title",
-      "type": "row"
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "custom": {},
-          "unit": "string"
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 7,
-        "w": 24,
-        "x": 0,
-        "y": 1
-      },
-      "hiddenSeries": false,
-      "id": 15,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "7.3.1",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "hide": false,
-          "metricColumn": "repo",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  $__timeGroupAlias(date_to,$__interval),\n  project AS metric,\n  score\nFROM github_repo_weekly\nWHERE\n  \n  $__timeFilter(date_to)\nORDER BY date_to, score desc",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "star"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "github_repo_weekly",
-          "timeColumn": "date",
-          "timeColumnType": "datetime",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "周活跃度变化趋势",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "string",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
       "datasource": null,
       "fieldConfig": {
         "defaults": {
@@ -393,7 +260,7 @@
         "h": 21,
         "w": 24,
         "x": 0,
-        "y": 8
+        "y": 0
       },
       "id": 17,
       "options": {
@@ -438,7 +305,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT project,\n      -- `rank`,\n       `score` as `上周活跃度`\n      -- `new_stars`,\n      -- `new_contributors`,\n      -- `new_forks`,\n      -- `new_pr`,\n      -- `closed_pr`,\n      -- `new_issues`,\n      -- `closed_issues`,\n      -- `pr_comment`,\n      -- `issue_comment`,\n      -- `record_date`\n  FROM github_repo_weekly\n WHERE date_to=(\nselect min(date_to)\n  FROM(\nSELECT date_to\n  FROM github_repo_weekly\n ORDER BY date_to desc\n limit 21) as A) -- $__timeFilter(date_to)\n       \n ORDER BY date_to desc,\n         score desc;",
+          "rawSql": "SELECT project,\n      -- `rank`,\n       `score` as `上周活跃度`\n      -- `new_stars`,\n      -- `new_contributors`,\n      -- `new_forks`,\n      -- `new_pr`,\n      -- `closed_pr`,\n      -- `new_issues`,\n      -- `closed_issues`,\n      -- `pr_comment`,\n      -- `issue_comment`,\n      -- `record_date`\n  FROM github_repo_weekly\n WHERE date_to=(\nselect min(date_to)\n  FROM(\nSELECT date_to\n  FROM github_repo_weekly\n ORDER BY date_to desc\n limit 25) as A) -- $__timeFilter(date_to)\n       \n ORDER BY date_to desc,\n         score desc;",
           "refId": "B",
           "select": [
             [
@@ -532,6 +399,539 @@
         }
       ],
       "type": "table"
+    },
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "id": 4,
+      "panels": [],
+      "title": "Row title",
+      "type": "row"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "unit": "string"
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
+      "hiddenSeries": false,
+      "id": 15,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.3.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "hide": false,
+          "metricColumn": "repo",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  $__timeGroupAlias(date_to,$__interval),\n  project AS metric,\n  score\nFROM github_repo_weekly\nWHERE\n  \n  $__timeFilter(date_to)\nORDER BY date_to, score desc",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "star"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "github_repo_weekly",
+          "timeColumn": "date",
+          "timeColumnType": "datetime",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "周活跃度变化趋势",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "string",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "displayMode": "color-text",
+            "filterable": true,
+            "width": 120
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "new_contributors"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 145
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "project"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 141
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "issue_comment"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "max(date_to)"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 419
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "time"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 424
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "record_date"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 188
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rank"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "排名"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "red",
+                      "value": 9
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "score"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "活跃度"
+              },
+              {
+                "id": "custom.displayMode",
+                "value": "gradient-gauge"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "project"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "项目"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "record_date"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "数据录入时间"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "活跃度变化"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "from": "-1000",
+                    "id": 1,
+                    "text": "↓",
+                    "to": "-1",
+                    "type": 2
+                  },
+                  {
+                    "from": "",
+                    "id": 2,
+                    "text": "",
+                    "to": "",
+                    "type": 1,
+                    "value": "0"
+                  },
+                  {
+                    "from": "1",
+                    "id": 3,
+                    "text": "↑",
+                    "to": "1000",
+                    "type": 2
+                  }
+                ]
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "green",
+                      "value": 1
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "数据录入时间"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 123
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "(SELECT date_to\nFROM github_repo_weekly\nORDER BY date_to desc\nlimit 1)-44"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 362
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "active_contributors"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "月活跃贡献者"
+              },
+              {
+                "id": "custom.align",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "月活跃贡献者"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "项目"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 143
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 24,
+        "w": 19,
+        "x": 2,
+        "y": 29
+      },
+      "id": 19,
+      "options": {
+        "frameIndex": 0,
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "活跃度"
+          }
+        ]
+      },
+      "pluginVersion": "7.3.1",
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  project,\n  -- `rank`, \n  sum(`score`) as score, \n  sum(`new_stars`) as new_stars, \n  sum(`new_contributors`) as new_contributors, \n  sum(`new_forks`) as new_forks, \n  sum(`new_pr`) as new_pr,\n  sum(`closed_pr`) as closed_pr, \n  sum(`new_issues`) as new_issues, \n  sum(`closed_issues`) as closed_issues, \n  sum(`pr_comment`) as pr_comment, \n  sum(`issue_comment`) as issue_comment\n  -- ,`record_date`\nFROM github_repo_weekly\nWHERE\n  date_to>\n \n date_add((SELECT date_to\n  FROM github_repo_weekly\n ORDER BY date_to desc\n limit 1), interval -23 day)\n group by project\n  -- $__timeFilter(date_to)\nORDER BY score desc\n-- \n\n-- select date_add((SELECT date_to\n--   FROM github_repo_weekly\n-- ORDER BY date_to desc\n-- limit 1), interval -24 day); -- add 1 day",
+          "refId": "D",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        },
+        {
+          "format": "table",
+          "group": [],
+          "hide": true,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select project,active_contributors from github_repo_monthly order by id desc limit 20;",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "id"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "github_repo_contributor",
+          "timeColumn": "date",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "最近4周活跃度排行榜",
+      "transformations": [
+        {
+          "id": "seriesToColumns",
+          "options": {
+            "byField": "project"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "active_contributors": 11,
+              "closed_issues": 8,
+              "closed_pr": 6,
+              "issue_comment": 10,
+              "new_contributors": 3,
+              "new_forks": 4,
+              "new_issues": 7,
+              "new_pr": 5,
+              "new_stars": 2,
+              "pr_comment": 9,
+              "project": 0,
+              "score": 1
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "table"
     }
   ],
   "schemaVersion": 26,
@@ -563,5 +963,5 @@
   "timezone": "",
   "title": "weekly activity",
   "uid": "n07jlPDnk",
-  "version": 6
+  "version": 11
 }
