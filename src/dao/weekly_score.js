@@ -9,6 +9,7 @@ const weeklyScoreDAO = {
   insert: function (
     rank,
     score,
+    owner,
     repoName,
     new_stars,
     new_contributors,
@@ -26,6 +27,7 @@ const weeklyScoreDAO = {
     fsDAOImpl.insert(
       rank,
       score,
+      owner,
       repoName,
       new_stars,
       new_contributors,
@@ -43,6 +45,7 @@ const weeklyScoreDAO = {
     mysqlDAOImpl.insert(
       rank,
       score,
+      owner,
       repoName,
       new_stars,
       new_contributors,
@@ -71,6 +74,7 @@ const mysqlDAOImpl = {
   insert: function (
     rank,
     score,
+    owner,
     repoName,
     new_stars,
     new_contributors,
@@ -94,7 +98,7 @@ const mysqlDAOImpl = {
       `INSERT INTO \`github_repo_weekly\` (\`date_from\`, \`date_to\`, \`record_date\`, \`rank\`, \`score\`, \`owner\`, \`project\`, \`new_stars\`, \`new_contributors\`, \`new_forks\`, \`new_pr\`, \`closed_pr\`, \`new_issues\`, \`closed_issues\`, \`pr_comment\`, \`issue_comment\`)` +
       ` VALUES ("${sinceReadable}","${toReadable}","${now}"` +
       `,${rank},${score}` +
-      `,null,"${repoName}"` +
+      `,"${owner}","${repoName}"` +
       `,${new_stars},${new_contributors},${new_forks}` +
       `,${new_pr},${closed_pr}` +
       `,${new_issues},${closed_issues}` +
@@ -133,10 +137,10 @@ const mysqlDAOImpl = {
 const fsDAOImpl = {
   start: function () {
     this.startEn(
-      `rank\tscore\tproject\tnew_stars\tnew_contributors\tnew_forks\tnew_pr\tclosed_pr\tnew_issues\tclosed_issues\tpr_comment\tissue_comment\tdate_from\tdate_to\trecord_date`
+      `rank\tscore\towner\tproject\tnew_stars\tnew_contributors\tnew_forks\tnew_pr\tclosed_pr\tnew_issues\tclosed_issues\tpr_comment\tissue_comment\tdate_from\tdate_to\trecord_date`
     );
     this.startZh(
-      `排名,活跃度得分,项目,新增star,新增contributor,fork,new_pr,close_pr,new_issues,close_issues,pr_comment,issue_comment,date_from,date_to,record_date`
+      `排名,活跃度得分,组织,项目,新增star,新增contributor,fork,new_pr,close_pr,new_issues,close_issues,pr_comment,issue_comment,date_from,date_to,record_date`
     );
   },
   startEn: function (content) {
@@ -166,6 +170,7 @@ const fsDAOImpl = {
   insert: function (
     rank,
     score,
+    owner,
     repoName,
     new_stars,
     new_contributors,
@@ -180,7 +185,7 @@ const fsDAOImpl = {
     toReadable,
     now
   ) {
-    let content = `${rank}\t${score}\t${repoName}\t${new_stars}\t${new_contributors}\t${new_forks}\t${new_pr}\t${closed_pr}\t${newIssue}\t${closeIssue}\t${prComment}\t${issueComment}\t${sinceReadable}\t${toReadable}\t${now}`;
+    let content = `${rank}\t${score}\t${owner}\t${repoName}\t${new_stars}\t${new_contributors}\t${new_forks}\t${new_pr}\t${closed_pr}\t${newIssue}\t${closeIssue}\t${prComment}\t${issueComment}\t${sinceReadable}\t${toReadable}\t${now}`;
     console.log(content);
     // write files
     content = content.replace(/\t/g, ",");
