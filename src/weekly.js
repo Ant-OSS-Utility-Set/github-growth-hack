@@ -138,6 +138,7 @@ async function start(token, repos, mergeRepo, since, to) {
     weeklyScoreDAO.insert(
       rank,
       result.score,
+      result.owner,
       result.nickName,
       result.new_stars,
       result.new_contributors,
