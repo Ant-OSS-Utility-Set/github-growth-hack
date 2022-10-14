@@ -1,6 +1,7 @@
 # 如何在钉钉群里添加“项目管理机器人”
 推动别人太麻烦了，交给机器人去做吧！
-“项目管理机器人”的功能包括:
+
+“项目管理机器人”可以定时在群里发消息，使用场景包括:
 - 开周会前，自动询问当事人进展
 - 写周报前，自动询问当事人进展
 <img src="https://user-images.githubusercontent.com/26001097/183242835-dc46c836-6f3c-48b3-9d80-ade6ebf40492.png" width = "50%" height = "50%" alt="welcome" align=center />
@@ -28,8 +29,48 @@
 git clone https://github.com/layotto/github-growth-hack.git
 ```
 
+进项目目录下:
+
+```shell
+npm install
+```
+
+
 修改配置文件 `src/notify.js`，具体看注释 :
 
-![image](https://user-images.githubusercontent.com/26001097/195801089-3c91e8e1-6a9b-4184-ad77-7548622c0091.png)
+![image](https://user-images.githubusercontent.com/26001097/195803061-14786769-244e-41b9-8ebb-0682213f5689.png)
 
-## 3. 配置定时任务
+## 3. 发一条消息测试一下
+在项目目录下敲命令:
+```shell
+npm run notify
+```
+
+如果一切正常，钉钉机器人会说话
+
+
+## 4. 配置定时任务
+```shell
+crontab -e
+```
+
+配 crontab 表达式，比如:
+
+（记得把这下面例子里的项目路径改成你的项目路径）
+```
+# Wednesday morning 10:30
+30 10 * * 3  cd /Users/qunli/projects/github-weekly-statistics && npm run notify
+
+# Friday 15:33
+33 15 * * 5  cd /Users/qunli/projects/github-weekly-statistics && npm run notify
+```
+
+或者这样写:
+```
+# Friday 15:33
+33 15 * * 5  node /Users/qunli/projects/github-weekly-statistics/src/notify.js
+```
+
+写完之后保存退出。
+
+到此，定时发消息的机器人就配置好了。
