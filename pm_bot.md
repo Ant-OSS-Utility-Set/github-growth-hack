@@ -13,13 +13,16 @@
 
 ## 1. 在钉钉群里添加机器人
 在钉钉群里，群设置 -> 智能群助手
+
 ![image](https://user-images.githubusercontent.com/26001097/195796895-66a120fa-0c79-49d1-9e31-a3c37dd5b9d6.png)
 ![image](https://user-images.githubusercontent.com/26001097/195797033-4cdf54ec-5493-4c8b-a4ac-58b9cf47d605.png)
 
 选这个机器人:
+
 ![image](https://user-images.githubusercontent.com/26001097/195797128-523d247d-8e8a-40a4-a449-d3ce8b5787cc.png)
 
 一路按提示操作，创建成功后，把 webhook 地址记录下来:
+
 ![image](https://user-images.githubusercontent.com/26001097/195797803-6ab06383-9966-43fd-a1f6-112e81e4afe3.png)
 
 这个新加的机器人不会说话，只是对外暴露了一个接口。下面我们要下载项目，去定时调这个接口。
