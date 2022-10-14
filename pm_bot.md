@@ -21,7 +21,12 @@
 
 ![image](https://user-images.githubusercontent.com/26001097/195797128-523d247d-8e8a-40a4-a449-d3ce8b5787cc.png)
 
-一路按提示操作，创建成功后，把 webhook 地址记录下来:
+一路按提示操作。安全设置可以选择“自定义关键词”，意思是发的消息必须带有这个关键词，不带的话就会被拒绝。
+
+![image](https://user-images.githubusercontent.com/26001097/195808469-9e3cdc50-3936-46ff-9baf-f603a535fef3.png)
+
+
+创建成功后，把 webhook 地址记录下来:
 
 ![image](https://user-images.githubusercontent.com/26001097/195797803-6ab06383-9966-43fd-a1f6-112e81e4afe3.png)
 
