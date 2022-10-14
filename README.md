@@ -117,7 +117,9 @@ issue 被 assign 后，在 IM 群中提醒当事人。
 
 ## 使用文档
 
-见[英文文档](README-en.md#usage) ，暂未翻译。
+- [如何在钉钉群里添加“项目管理机器人”](pm_bot.md)
+
+其他功能的用法见[英文文档](README-en.md#usage) ，暂未翻译。
 
 ## 活跃度指标说明
 
