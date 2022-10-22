@@ -115,6 +115,12 @@ issue 被 assign 后，在 IM 群中提醒当事人。
 
 - [ ] 集成进 github issues, 自动追踪已 assign 的高优先级 issue, 在 issue 下询问进度或者在 IM 内询问进度。
 
+### 6. 运营机器人
+
+- 自动推广 good first issue，吸引贡献者
+
+详见 https://github.com/mosn/layotto/issues/800
+
 ## 使用文档
 
 - [如何在钉钉群里添加“项目管理机器人”](pm_bot.md)
