@@ -93,7 +93,12 @@ const issueScanner = {
             text = appendGoodFirstIssues(text, issues.unknown);
           }
 
-          // 3.2. send to IM groups
+          // 3.2. don't send message if there's no issue
+          if (!hasKnownIssues && issues.unknown.length == 0) {
+            return;
+          }
+
+          // 3.3. send to IM groups
           options["good-first-issue-notifier"]["channels"].forEach((ch) => {
             if (ch["type"] == "dingtalk") {
               sender.sendMarkdown(ch.urls, text, ch.title, ch.atUid, ch.atAll);
