@@ -19,11 +19,20 @@ let to = utils.today();
 
 // 3. Which repositries do you care about?
 // Parameters in the repos array are:
-// [owner, repo , nickname_in_report(optional) ]
+// [owner, repo , options(optional) ]
 let repos = [
   ["mosn", "mosn"],
   ["mosn", "layotto"],
-  ["layotto", "java-sdk", "layotto-java-sdk"],
+  [
+    "layotto",
+    "java-sdk",
+    {
+      nickname: "layotto-java-sdk",
+      "good-first-issue-notifier": {
+        enable: true,
+      },
+    },
+  ],
   ["sofastack", "sofa-tracer"],
   ["sofastack", "sofa-rpc-node"],
   ["sofastack", "sofa-rpc"],
@@ -41,7 +50,17 @@ let repos = [
   ["sofastack", "sofa-bolt"],
   ["sofastack", "sofa-ark"],
   ["sofastack", "sofa-acts"],
-  // ["sofastack", "sofa-jarslink"],
+  ["sofastack", "sofa-jarslink"],
+  ["CeresDB", "ceresdb", { "liveness-check": { enable: false } }],
+  ["CeresDB", "ceresmeta", { "liveness-check": { enable: false } }],
+  ["CeresDB", "ceresdb-java-client", { "liveness-check": { enable: false } }],
+  ["CeresDB", "ceresdbproto", { "liveness-check": { enable: false } }],
+  ["opensumi", "core", { "liveness-check": { enable: false } }],
+  [
+    "TRaaSStack",
+    "auto-unit-test-case-generator",
+    { "liveness-check": { enable: false } },
+  ],
 ];
 
 // (Optional) Merge different repos into one report

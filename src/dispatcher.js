@@ -35,11 +35,12 @@ function doDispatch(token, repos, mergeRepo, since, to, dingTalkGroupConfig) {
 
   const args = process.argv.slice(2);
   console.log("Mode: " + args[0]);
+
   if (args[0] == "month") {
     monthly.generateReportForLastMonth(token, repos, mergeRepo);
   } else if (args[0] == "scan") {
     setDingTalkGroup(dingTalkGroupConfig.groups, dingTalkGroupConfig.owners);
-    scanner.scan(token, repos, since, to);
+    scanner.livenessCheck(token, repos, since, to);
   } else {
     weekly.generateScoreReport(token, repos, mergeRepo, since, to);
   }

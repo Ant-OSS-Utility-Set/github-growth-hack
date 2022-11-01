@@ -31,9 +31,10 @@ async function start(token, repos, mergeRepo, since, to) {
   for (let i = 0; i < repos.length; i++) {
     const owner = repos[i][0];
     const repo = repos[i][1];
-    let nickName = repos[i][2];
-    if (nickName == null) {
-      nickName = repo;
+
+    let nickName = repo;
+    if (repos[i][2] != null && repos[i][2]["nickname"] != null) {
+      nickName = repos[i][2]["nickname"];
     }
     // 2.1. fetch data
     const promiseIssue = collectIssueData(owner, repo, since);

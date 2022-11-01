@@ -3,15 +3,33 @@ const dangerousIssueDAO = require("./dao/dangerous_issue");
 const { weeklyScoreDAO } = require("./dao/weekly_score");
 
 const scanner = {
-  scan: function (token, repos, since, to) {
+  livenessCheck: function (token, repos, since, to) {
     // 1. start
     dangerousIssueDAO.start();
-    // 2. collect data
+    let filteredRepos = [];
+    let idx = 0;
+    // 2. filter repos
+    for (let i = 0; i < repos.length; i++) {
+      // check config
+      // if there is no need to check this repo
+      if (
+        repos[i][2] != null &&
+        repos[i][2]["liveness-check"] != null &&
+        repos[i][2]["liveness-check"]["enable"] == false
+      ) {
+        continue;
+      }
+      // else, add this repo to the `filteredRepos`
+      filteredRepos[idx] = repos[i];
+      idx++;
+    }
+    // 3. collect data
     let arr = [];
     let allPassLivenessCheck = true;
-    for (let i = 0; i < repos.length; i++) {
-      const owner = repos[i][0];
-      const repo = repos[i][1];
+    for (let i = 0; i < filteredRepos.length; i++) {
+      const owner = filteredRepos[i][0];
+      const repo = filteredRepos[i][1];
+
       // fetch data
       arr[i] = listDangerousOpenIssues(token, owner, repo, to)
         // write dangerous issues
@@ -79,7 +97,7 @@ const scanner = {
           });
         });
     }
-    // 3. commit
+    // 4. commit
     Promise.all(arr).then((results) => {
       if (allPassLivenessCheck) {
         // congratulations!
