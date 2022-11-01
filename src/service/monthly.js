@@ -1,5 +1,5 @@
 const fs = require("fs");
-const { activeContributorsLastMonth } = require("./metrics/contributor");
+const { activeContributorsLastMonth } = require("../metrics/contributor");
 
 function generateReportForLastMonth(token, repos, mergeRepo) {
   // write header

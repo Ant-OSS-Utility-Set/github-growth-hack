@@ -1,15 +1,15 @@
 const { Octokit } = require("@octokit/core");
-const { weeklyScoreDAO } = require("./dao/weekly_score");
-const { utils } = require("./utils/time_utils");
+const { weeklyScoreDAO } = require("../dao/weekly_score");
+const { utils } = require("../utils/time_utils");
 const fetch = require("node-fetch");
-const { countStarsAndForks } = require("./metrics/star_fork");
-const { countNewContributors } = require("./metrics/contributor");
+const { countStarsAndForks } = require("../metrics/star_fork");
+const { countNewContributors } = require("../metrics/contributor");
 const moment = require("moment"); // require
 const {
   listOpenIssues,
   filterOutDangerousIssues,
-} = require("./metrics/issues");
-const dangerousIssueDAO = require("./dao/dangerous_issue");
+} = require("../metrics/issues");
+const dangerousIssueDAO = require("../dao/dangerous_issue");
 
 let octokit = null;
 

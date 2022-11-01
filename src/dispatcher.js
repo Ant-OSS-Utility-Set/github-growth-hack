@@ -1,6 +1,6 @@
-const weekly = require("./weekly");
-const { monthly } = require("./monthly");
-const { scanner } = require("./scanner");
+const weekly = require("./service/weekly");
+const { monthly } = require("./service/monthly");
+const { scanner } = require("./service/scanner");
 const { setDingTalkGroup } = require("./dao/dangerous_issue");
 const { shouldReplyInXDays, mustReplyInXDays } = require("./metrics/issues");
 const { setConfig } = require("./dao/mysql_conn");
@@ -41,6 +41,9 @@ function doDispatch(token, repos, mergeRepo, since, to, dingTalkGroupConfig) {
   } else if (args[0] == "scan") {
     setDingTalkGroup(dingTalkGroupConfig.groups, dingTalkGroupConfig.owners);
     scanner.livenessCheck(token, repos, since, to);
+  } else if (args[0] == "good-first-issue") {
+    setDingTalkGroup(dingTalkGroupConfig.groups, dingTalkGroupConfig.owners);
+    scanner.scanGoodFirstIssues(token, repos, since, to);
   } else {
     weekly.generateScoreReport(token, repos, mergeRepo, since, to);
   }

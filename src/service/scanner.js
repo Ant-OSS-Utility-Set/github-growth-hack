@@ -1,8 +1,9 @@
-const { listDangerousOpenIssues } = require("./metrics/issues");
-const dangerousIssueDAO = require("./dao/dangerous_issue");
-const { weeklyScoreDAO } = require("./dao/weekly_score");
+const { listDangerousOpenIssues } = require("../metrics/issues");
+const dangerousIssueDAO = require("../dao/dangerous_issue");
+const { weeklyScoreDAO } = require("../dao/weekly_score");
 
 const scanner = {
+  scanGoodFirstIssues: function (token, repos, since, to) {},
   livenessCheck: function (token, repos, since, to) {
     // 1. start
     dangerousIssueDAO.start();
@@ -11,7 +12,7 @@ const scanner = {
     // 2. filter repos
     for (let i = 0; i < repos.length; i++) {
       // check config
-      // if there is no need to check this repo
+      // if there is no need to check this repo, ignore it.
       if (
         repos[i][2] != null &&
         repos[i][2]["liveness-check"] != null &&
@@ -61,7 +62,6 @@ const scanner = {
           if (!health.isVeryDangerous) {
             return health;
           }
-          // TODO: trigger liveness check
           const weeksMatter = 4;
           const livenessBaseline = 20;
           // query scores in history
