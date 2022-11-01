@@ -1,0 +1,40 @@
+query listGoodFirstIssues($owner: String!, $name: String!,$updatedSince: DateTime!) {
+  repository(owner: $owner, name: $name) {
+    issues(
+      states: [OPEN]
+      labels: ["good first issue"]
+      filterBy: {assignee: null, since: $updatedSince}
+      last: 100
+    ) {
+      nodes {
+        id
+        repository {
+          name
+        }
+        title
+        url
+        authorAssociation
+        author {
+          login
+        }
+        createdAt
+        labels(last: 30) {
+          edges {
+            node {
+              name
+            }
+          }
+        }
+        comments(last: 30) {
+          nodes {
+            author {
+              login
+            }
+            authorAssociation
+          }
+        }
+      }
+      totalCount
+    }
+  }
+}

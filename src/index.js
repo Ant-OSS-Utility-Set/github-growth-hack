@@ -22,15 +22,31 @@ let to = utils.today();
 // [owner, repo , options(optional) ]
 let repos = [
   ["mosn", "mosn"],
-  ["mosn", "layotto"],
+  [
+    "mosn",
+    "layotto",
+    {
+      "good-first-issue-notifier": {
+        channels: [
+          {
+            type: "dingtalk",
+            urls: [
+              // IM group bot url
+              "https://oapi.dingtalk.com/robot/send?access_token=XXXXXX",
+            ],
+            title: "XXXX",
+            atUid: [],
+            atAll: true,
+          },
+        ],
+      },
+    },
+  ],
   [
     "layotto",
     "java-sdk",
     {
       nickname: "layotto-java-sdk",
-      "good-first-issue-notifier": {
-        enable: true,
-      },
     },
   ],
   ["sofastack", "sofa-tracer"],

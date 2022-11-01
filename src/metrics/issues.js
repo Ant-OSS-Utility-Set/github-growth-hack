@@ -73,6 +73,142 @@ async function listOpenIssues(token, owner, repo) {
     });
 }
 
+async function listGoodFirstIssues(token, owner, repo, createdSince) {
+  console.log(
+    "Invoking github API to fetch good first issues. owner: " +
+      owner +
+      " repo:" +
+      repo +
+      " createdSince:" +
+      createdSince
+  );
+
+  // query statement for graphql API
+  let query = `query listGoodFirstIssues($owner: String!, $name: String!,$updatedSince: DateTime!) {
+    repository(owner: $owner, name: $name) {
+      issues(
+        states: [OPEN]
+        labels: ["good first issue"]
+        filterBy: {assignee: null, since: $updatedSince}
+        last: 100
+      ) {
+        nodes {
+          id
+          repository {
+            name
+          }
+          title
+          url
+          authorAssociation
+          author {
+            login
+          }
+          createdAt
+          labels(last: 30) {
+            edges {
+              node {
+                name
+              }
+            }
+          }
+          comments(last: 30) {
+            nodes {
+              author {
+                login
+              }
+              authorAssociation
+            }
+          }
+        }
+        totalCount
+      }
+    }
+  }
+  `;
+
+  return fetch("https://api.github.com/graphql", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      Authorization: "bearer " + token,
+    },
+    body: JSON.stringify({
+      query: query,
+      variables: {
+        owner: owner,
+        name: repo,
+        updatedSince: createdSince,
+      },
+    }),
+  })
+    .then((res) => {
+      return res.json();
+    })
+    .then((d) => {
+      return d.data.repository.issues;
+    })
+    .then((issues) => filterIssuesByCreatedSince(issues, createdSince))
+    .then((issues) => groupByDifficulty(issues));
+}
+
+function groupByDifficulty(issues) {
+  const result = {
+    easy: [],
+    medium: [],
+    hard: [],
+    unknown: [],
+  };
+  issues.forEach((issue) => {
+    for (const idx in issue.labels) {
+      const labelName = issue.labels[idx];
+      
+      if (labelName == "easy") {
+        result["easy"].push(issue);
+        return;
+      } else if (labelName == "medium") {
+        result["medium"].push(issue);
+        return;
+      } else if (labelName == "hard") {
+        result["hard"].push(issue);
+        return;
+      }
+    }
+    result["unknown"].push(issue);
+  });
+  return result;
+}
+
+function filterIssuesByCreatedSince(issues, createdSince) {
+  console.log("Before filter: " + issues.nodes.length + " issues");
+  const result = [];
+  // filter out issues
+  issues.nodes.forEach((issue) => {
+    // Ignore community issues. We only care about the good first issues submitted by our member or owner
+    let isCommunityIssue = isCommunityIssue_graphql(issue);
+    if (isCommunityIssue) {
+      return;
+    }
+    if (issue.author == null) {
+      // console.log(issue);
+      return;
+    }
+    // check created date
+    let createDay = moment(issue.createdAt, "YYYY-MM-DDTHH:mm:ssZ");
+    if (moment(createdSince).isAfter(createDay)) {
+      return;
+    }
+    result.push({
+      project: issue.repository.name,
+      title: issue.title,
+      url: issue.url,
+      labels: issue.labels.edges.map((e) => e.node.name),
+    });
+  });
+  console.log("After filter: " + result.length + " issues");
+  return result;
+}
+
 const baseline = moment("2022-01-01", "YYYY-MM-DD");
 
 async function listDangerousOpenIssues(token, owner, repo, to) {
@@ -173,6 +309,7 @@ function someMemberHasReplied_graphql(issue) {
 
 module.exports = {
   listOpenIssues: listOpenIssues,
+  listGoodFirstIssues: listGoodFirstIssues,
   listDangerousOpenIssues: listDangerousOpenIssues,
   filterOutDangerousIssues: filterOutDangerousIssues,
   shouldReplyInXDays(days) {

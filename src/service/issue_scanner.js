@@ -1,9 +1,114 @@
-const { listDangerousOpenIssues } = require("../metrics/issues");
+const {
+  listDangerousOpenIssues,
+  listGoodFirstIssues,
+} = require("../metrics/issues");
 const dangerousIssueDAO = require("../dao/dangerous_issue");
 const { weeklyScoreDAO } = require("../dao/weekly_score");
+const sender = require("../dao/dingtalk");
 
-const scanner = {
-  scanGoodFirstIssues: function (token, repos, since, to) {},
+const issueScanner = {
+  scanGoodFirstIssues: function (token, repos, since, to) {
+    let filteredRepos = [];
+    let idx = 0;
+    // 1. filter repos
+    for (let i = 0; i < repos.length; i++) {
+      // check options
+      let options = repos[i][2];
+      if (
+        options != null &&
+        options["good-first-issue-notifier"] != null &&
+        options["good-first-issue-notifier"]["channels"] != null &&
+        options["good-first-issue-notifier"]["channels"].length > 0
+      ) {
+        // add this repo to the `filteredRepos`
+        filteredRepos[idx] = repos[i];
+        idx++;
+      }
+    }
+    if (filteredRepos.length == 0) {
+      return;
+    }
+    // 2. fetch good first issues
+    let arr = [];
+    for (let i = 0; i < filteredRepos.length; i++) {
+      const owner = filteredRepos[i][0];
+      const repo = filteredRepos[i][1];
+      const options = filteredRepos[i][2];
+
+      // fetch data
+      arr[i] = listGoodFirstIssues(token, owner, repo, since)
+        // 3. send to IM group
+        .then(function (issues) {
+          // console.log(issues);
+
+          // The data structure looks like:
+          // {
+          //   easy: [],
+          //   medium: [
+          //     {
+          //       project: 'layotto',
+          //       title: 'Develop a new component for sms API; 为"短信 API" 开发新的组件',
+          //       url: 'https://github.com/mosn/layotto/issues/830',
+          //       labels: [Array]
+          //     }
+          //   ],
+          //   hard: [
+          //     {
+          //       project: 'layotto',
+          //       title: 'generate a cli tool for Layotto;  生成 Layotto 命令行工具',
+          //       url: 'https://github.com/mosn/layotto/issues/826',
+          //       labels: [Array]
+          //     }
+          //   ],
+          //   unknown: []
+          // }
+
+          // 3.1. Generate promotion text
+          let text = `${repo} 新增了几个 good first issue, 欢迎感兴趣的朋友认领! \n\r`;
+
+          let hasKnownIssues = false;
+          // easy
+          if (issues.easy.length > 0) {
+            text += "- Easy \n\r";
+            text = appendGoodFirstIssues(text, issues.easy);
+            hasKnownIssues = true;
+          }
+          // medium
+          if (issues.medium.length > 0) {
+            text += "- Medium \n\r";
+            text = appendGoodFirstIssues(text, issues.medium);
+            hasKnownIssues = true;
+          }
+          // hard
+          if (issues.hard.length > 0) {
+            text += "- Hard \n\r";
+            text = appendGoodFirstIssues(text, issues.hard);
+            hasKnownIssues = true;
+          }
+          // unknown
+          if (issues.unknown.length > 0) {
+            if (hasKnownIssues) {
+              text += "- 其他 \n\r";
+            }
+            text = appendGoodFirstIssues(text, issues.unknown);
+          }
+
+          // 3.2. send to IM groups
+          options["good-first-issue-notifier"]["channels"].forEach((ch) => {
+            if (ch["type"] == "dingtalk") {
+              sender.sendMarkdown(ch.urls, text, ch.title, ch.atUid, ch.atAll);
+            } else {
+              console.error(`channel ${ch["type"]} not supported!`);
+            }
+          });
+        });
+    }
+    // 4. finish
+    Promise.all(arr).then((results) => {
+      console.log("All scanned!");
+    });
+  },
+
   livenessCheck: function (token, repos, since, to) {
     // 1. start
     dangerousIssueDAO.start();
@@ -117,6 +222,22 @@ const scanner = {
   },
 };
 
+function appendGoodFirstIssues(text, issues) {
+  issues.forEach((issue) => {
+    // Try to get chinese title
+    let titles = issue.title.split(";");
+    let title = titles[0];
+    if (titles[1] != null) {
+      title = titles[1];
+    }
+    title = title.trim();
+
+    // append text
+    text = text + `${title}: ${issue.url} \n\r`;
+  });
+  return text;
+}
+
 module.exports = {
-  scanner: scanner,
+  issueScanner: issueScanner,
 };

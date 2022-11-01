@@ -119,6 +119,8 @@ issue 被 assign 后，在 IM 群中提醒当事人。
 
 - 自动推广 good first issue，吸引贡献者
 
+![](https://user-images.githubusercontent.com/26001097/199180613-f5fea5ba-70a8-4b99-984d-912aad487ff0.png)
+
 详见 https://github.com/mosn/layotto/issues/800
 
 ## 使用文档
