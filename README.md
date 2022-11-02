@@ -123,6 +123,7 @@ issue 被 assign 后，在 IM 群中提醒当事人。
 
 详见 https://github.com/mosn/layotto/issues/800
 
+如果开启该功能，good first issue 必须满足一定的label 规范、命名规范, 详见 https://mosn.io/layotto/#/zh/development/label-spec
 ## 使用文档
 
 - [如何在钉钉群里添加“项目管理机器人”](pm_bot.md)
