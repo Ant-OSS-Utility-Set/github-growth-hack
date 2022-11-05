@@ -8,7 +8,7 @@
     "week": "node src/index.js",
     "month": "node src/index.js month",
     "scan": "node src/index.js scan",
-    "notify_dev": "node configs/notify_dev",
+    "notify_dev": "node configs/notify_dev.js",
     "notify_prod": "node configs/notify_prod.js",
     "notify": "node src/notify.js",
     "week_dev": "node configs/scan_dev.js",
