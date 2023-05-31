@@ -186,7 +186,6 @@ const issueScanner = {
             }
             let success = false;
             for (let i = 0; i < weeksMatter; i++) {
-              // console.log(data.rows[i]);
               if (data.rows[i] >= livenessBaseline) {
                 success = true;
               }
