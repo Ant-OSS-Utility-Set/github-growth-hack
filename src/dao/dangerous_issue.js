@@ -80,30 +80,17 @@ const dingTalkDao = {
     // 4. send warning for each project
     // notify
     project2issues.forEach((k, project) => {
-      // console.log(k, project, x);
       let uid = this.owners.get(project);
-
-      if (uid == null || uid.length == 0) {
-        uid = [`${project}`]
+      if (!uid || uid.length === 0) {
+        uid = [`${project}`];
       }
-      // concatenate messages.
-      let content = "";
-      uid.forEach((id) => {
-        if (id === project) {
-          content += `请${project}项目的相关`
-        } else {
-          content += `@${id}`;
-        }
-      });
-      let filteredIssues = k.filter((issue) => Number(issue.duration) <= 30);
-      if (filteredIssues.length > 0) {
-        content += `老师，有空看下${project}的issue哈, ${this.keyword}需要你：\n `;
-        k.forEach((issue) => {
-          content += `用户等了${issue.duration}天啦: ${issue.url}\n`;
-        });
+
+        let content = uid.map(id => id === project ? `请${project}项目的相关` : `@${id}`).join('');
+
+        content += `老师，有空看下${project}的issue哈, ${this.keyword}需要你：\n`;
+        content += k.map(issue => `用户等了${issue.duration}天啦: ${issue.url}\n`).join('');
         // send
         this.send(content, uid, false, project, true, "issue");
-      }
     });
   },
   isIgnoredTopicType: function (topicTypesIgnore, messageType) {
