@@ -78,12 +78,12 @@ const dingTalkDao = {
     // 4. send warning for each project
     // notify
     project2issues.forEach((k, project) => {
+      console.log(k)
       let uid = this.owners.get(project);
       if (!uid || uid.length === 0) {
         uid = [`${project}`];
       }
-
-        let content = uid.map(id => id === project ? `请${project}项目的相关` : `@${id}`).join('');
+      let content = uid.map(id => id === project ? `请${project}项目的相关` : `@${id}`).join('');
 
         content += `老师，有空看下${project}的issue哈, ${this.keyword}需要你：\n`;
         content += k.map(issue => `用户等了${issue.duration}天啦: ${issue.url}\n`).join('');
