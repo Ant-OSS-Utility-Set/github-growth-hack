@@ -237,6 +237,7 @@ function calculateScore_v2_sub(result, to) {
   const k2 = 7;
   filterOutDangerousIssues(result.openIssues, to).forEach((issue) => {
     // log these dangerous issues !
+    // 过滤近30的isuue
     if (Number(issue.duration) <= 30) {
       dangerousIssueDAO.insert(
         issue.duration,

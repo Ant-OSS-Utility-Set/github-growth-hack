@@ -78,7 +78,6 @@ const dingTalkDao = {
     // 4. send warning for each project
     // notify
     project2issues.forEach((k, project) => {
-      console.log(k)
       let uid = this.owners.get(project);
       if (!uid || uid.length === 0) {
         uid = [`${project}`];
