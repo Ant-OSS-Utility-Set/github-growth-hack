@@ -237,12 +237,14 @@ function calculateScore_v2_sub(result, to) {
   const k2 = 7;
   filterOutDangerousIssues(result.openIssues, to).forEach((issue) => {
     // log these dangerous issues !
-    dangerousIssueDAO.insert(
-      issue.duration,
-      issue.project,
-      issue.title,
-      issue.url
-    );
+    if (Number(issue.duration) <= 30) {
+      dangerousIssueDAO.insert(
+        issue.duration,
+        issue.project,
+        issue.title,
+        issue.url
+      ); 
+    }
     // substract score
     if (issue.isVeryDangerous) {
       result.score -= k2;

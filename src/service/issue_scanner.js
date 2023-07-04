@@ -155,12 +155,14 @@ const issueScanner = {
             return health;
           }
           resultsArray.forEach((result) => {
-            dangerousIssueDAO.insert(
-              result.duration,
-              result.project,
-              result.title,
-              result.url
-            );
+            if(Number(result.duration) <= 30){
+              dangerousIssueDAO.insert(
+                result.duration,
+                result.project,
+                result.title,
+                result.url
+              );
+            }
             if (result.isVeryDangerous) {
               health.isVeryDangerous = true;
             }
@@ -186,6 +188,7 @@ const issueScanner = {
             }
             let success = false;
             for (let i = 0; i < weeksMatter; i++) {
+              console.log(data.rows[i]);
               if (data.rows[i] >= livenessBaseline) {
                 success = true;
               }

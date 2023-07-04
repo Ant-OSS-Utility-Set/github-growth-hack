@@ -73,9 +73,7 @@ const dingTalkDao = {
         project2issues.set(name, []);
       }
       let list = project2issues.get(name);
-      if (Number(issue.duration) <= 30) {
-        list.push(issue);
-      }
+      list.push(issue);
     });
     // 4. send warning for each project
     // notify
