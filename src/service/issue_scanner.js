@@ -155,15 +155,12 @@ const issueScanner = {
             return health;
           }
           resultsArray.forEach((result) => {
-            // 过滤近30的isuue
-            if(Number(result.duration) <= 30){
               dangerousIssueDAO.insert(
                 result.duration,
                 result.project,
                 result.title,
                 result.url
               );
-            }
             if (result.isVeryDangerous) {
               health.isVeryDangerous = true;
             }
