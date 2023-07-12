@@ -3,7 +3,7 @@ const sender = require("./dao/dingtalk");
 sender.sendMarkdown(
   [
     // The webhook url of your dingtalk bot. For example:
-    "https://oapi.dingtalk.com/robot/send?access_token=111111111111",
+    "https://oapi.dingtalk.com/robot/send?access_token=111111",
   ],
 
   // Here's what you want your bot to say.

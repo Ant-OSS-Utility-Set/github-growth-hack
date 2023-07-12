@@ -45,6 +45,10 @@ function sevenDaysBefore() {
 function today() {
   return moment().toISOString(true);
 }
+
+function toISOS (data){
+  return moment(data).toISOString(true)
+}
 // get now with format 'YYYY-MM-DD HH:mm:ss'
 function nowWithReadableFormat() {
   return moment().format("YYYY-MM-DD HH:mm:ss");
@@ -99,4 +103,5 @@ exports.utils = {
   thisSaturday: thisSaturday,
   thisFriday23_59_59: thisFriday23_59_59,
   lastSaturday00_00_00: lastSaturday00_00_00,
+  toISOS:toISOS,
 };

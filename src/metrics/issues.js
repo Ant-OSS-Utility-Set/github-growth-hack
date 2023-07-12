@@ -208,8 +208,8 @@ function filterIssuesByCreatedSince(issues, createdSince) {
   console.log("After filter: " + result.length + " issues");
   return result;
 }
-
-const baseline = moment("2022-01-01", "YYYY-MM-DD");
+const k = 30;
+const baseline = moment().subtract(k,'days')
 
 async function listDangerousOpenIssues(token, owner, repo, to) {
   return listOpenIssues(token, owner, repo).then((issues) =>

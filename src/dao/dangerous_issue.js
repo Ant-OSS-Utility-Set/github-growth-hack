@@ -14,7 +14,7 @@ const dingTalkDao = {
   dingGroups: [],
   keyword: "我们的社区",
   owners: new Map(),
-  start: function () {},
+  start: function () { },
   // put the issue into the memory list
   insert: function (duration, project, title, url) {
     this.issues.push({
@@ -59,6 +59,7 @@ const dingTalkDao = {
       this.sendImage(img, null, false, "*", false, "issue");
       return;
     }
+
     // 3. group by project
     // sort
     this.issues.sort((a, b) => {
@@ -77,24 +78,16 @@ const dingTalkDao = {
     // 4. send warning for each project
     // notify
     project2issues.forEach((k, project) => {
-      // console.log(k, project, x);
       let uid = this.owners.get(project);
-      if (uid == null || uid.length == 0) {
-        return;
+      if (!uid || uid.length === 0) {
+        uid = [`${project}`];
       }
-      // concatenate messages.
-      let content = "";
-      uid.forEach((id) => {
-        content += `@${id} `;
-      });
-      content += `老师，有空看下${project}的issue哈, ${this.keyword}需要你：\n `;
-      // console.log(v);
-      // console.log(content);
-      k.forEach((issue) => {
-        content += `用户等了${issue.duration}天啦: ${issue.url}\n`;
-      });
-      // send
-      this.send(content, uid, false, project, true, "issue");
+      let content = uid.map(id => id === project ? `请${project}项目的相关` : `@${id}`).join('');
+
+        content += `老师，有空看下${project}的issue哈, ${this.keyword}需要你：\n`;
+        content += k.map(issue => `用户等了${issue.duration}天啦: ${issue.url}\n`).join('');
+        // send
+        this.send(content, uid, false, project, true, "issue");
     });
   },
   isIgnoredTopicType: function (topicTypesIgnore, messageType) {
@@ -299,7 +292,8 @@ const fsDAOImpl = {
     }
   },
   insert: function (duration, project, title, url) {
-    title = title.replaceAll(",", "，");
+    let reg = RegExp(',', "g")
+    title = title.replace(reg, "，");
     this.issues.push({
       duration: duration,
       project: project,
