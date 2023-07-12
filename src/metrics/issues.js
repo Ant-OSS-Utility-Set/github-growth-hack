@@ -237,7 +237,7 @@ function filterOutDangerousIssues(issues, to) {
       return;
     }
     if (withSpecialLabels(issue)) {
-      // console.log("ignore issue with special labels:" + issue.url);
+      console.log("ignore issue with special labels:" + issue.url);
       return;
     }
     // check baseline
