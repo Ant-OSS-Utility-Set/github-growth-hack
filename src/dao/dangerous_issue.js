@@ -14,6 +14,8 @@ const dingTalkDao = {
   dingGroups: [],
   keyword: "我们的社区",
   owners: new Map(),
+  dingTalkDao:[],
+  newOwers:[],
   start: function () { },
   // put the issue into the memory list
   insert: function (duration, project, title, url) {
@@ -26,6 +28,7 @@ const dingTalkDao = {
   },
   // write to db
   commit: function () {
+
     // 1. check configuration
     if (this.dingGroups.length == 0) {
       // console.log("DingTalk url is empty");
@@ -77,12 +80,21 @@ const dingTalkDao = {
     });
     // 4. send warning for each project
     // notify
+
     project2issues.forEach((k, project) => {
-      let uid = this.owners.get(project);
+      let uid =  this.owners.get(project);
+      let owerItem  = []
+
       if (!uid || uid.length === 0) {
         uid = [`${project}`];
       }
-      let content = uid.map(id => id === project ? `请${project}项目的相关` : `@${id}`).join('');
+      this.newOwers.map((item)=>{
+        if(item[1] === project){
+          owerItem.push(item[0])
+        }
+      })
+      
+      let content = uid.map(id => id === project ? `请${owerItem}/${project}项目的相关` : `@${id}`).join('');
 
         content += `老师，有空看下${project}的issue哈, ${this.keyword}需要你：\n`;
         content += k.map(issue => `用户等了${issue.duration}天啦: ${issue.url}\n`).join('');
@@ -90,6 +102,7 @@ const dingTalkDao = {
         this.send(content, uid, false, project, true, "issue");
     });
   },
+
   isIgnoredTopicType: function (topicTypesIgnore, messageType) {
     if (topicTypesIgnore != null && topicTypesIgnore.length > 0) {
       for (let topicType of topicTypesIgnore) {
@@ -342,9 +355,10 @@ module.exports = {
     fsDAOImpl.commit();
     dingTalkDao.commit();
   },
-  setDingTalkGroup(groups, owners) {
+  setDingTalkGroup(groups, owners,newOwers) {
     dingTalkDao.dingGroups = groups;
     dingTalkDao.owners = owners;
+    dingTalkDao.newOwers = newOwers
   },
   getDingTalkDao() {
     return dingTalkDao;

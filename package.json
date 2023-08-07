@@ -10,6 +10,7 @@
     "scan": "node src/index.js scan",
     "notify_dev": "node configs/notify_dev.js",
     "notify_prod": "node configs/notify_prod.js",
+    "dispatch": "node configs/config_dispatch.js",
     "notify": "node src/notify.js",
     "week_dev": "node configs/scan_dev.js",
     "week_prod": "node configs/scan_prod.js",
@@ -26,6 +27,8 @@
   "license": "ISC",
   "dependencies": {
     "@octokit/core": "^3.5.1",
+    "fs": "0.0.1-security",
+    "js-yaml": "^4.1.0",
     "moment": "^2.29.1",
     "mysql": "^2.18.1",
     "node-fetch": "2.0",
