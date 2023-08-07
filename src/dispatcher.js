@@ -39,7 +39,7 @@ function doDispatch(token, repos, mergeRepo, since, to, dingTalkGroupConfig) {
   if (args[0] == "month") {
     monthly.generateReportForLastMonth(token, repos, mergeRepo);
   } else if (args[0] == "scan") {
-    setDingTalkGroup(dingTalkGroupConfig.groups, dingTalkGroupConfig.owners);
+    setDingTalkGroup(dingTalkGroupConfig.groups, dingTalkGroupConfig.owners,repos);
     issueScanner.livenessCheck(token, repos, since, to);
   } else if (args[0] == "good-first-issue") {
     issueScanner.scanGoodFirstIssues(token, repos, since, to);
