@@ -213,11 +213,11 @@ const baseline = moment().subtract(k,'days')
 
 async function listDangerousOpenIssues(token, owner, repo, to) {
   return listOpenIssues(token, owner, repo).then((issues) =>
-    filterOutDangerousIssues(issues, to)
+    filterOutDangerousIssues(issues, to,owner)
   );
 }
 
-function filterOutDangerousIssues(issues, to) {
+function filterOutDangerousIssues(issues, to,owner) {
   const result = [];
   // filter out those dangerous issues
   issues.nodes.forEach((issue) => {
@@ -258,6 +258,7 @@ function filterOutDangerousIssues(issues, to) {
     }
     result.push({
       duration: issue.duration,
+      owners:owner,
       project: issue.repository.name,
       title: issue.title,
       url: issue.url,

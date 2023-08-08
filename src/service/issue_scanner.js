@@ -157,9 +157,10 @@ const issueScanner = {
           resultsArray.forEach((result) => {
               dangerousIssueDAO.insert(
                 result.duration,
+                result.owners,
                 result.project,
                 result.title,
-                result.url
+                result.url,
               );
             if (result.isVeryDangerous) {
               health.isVeryDangerous = true;
