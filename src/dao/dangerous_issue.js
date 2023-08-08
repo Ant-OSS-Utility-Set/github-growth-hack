@@ -14,8 +14,6 @@ const dingTalkDao = {
   dingGroups: [],
   keyword: "我们的社区",
   owners: new Map(),
-  dingTalkDao: [],
-  newOwers: [],
   start: function () { },
   // put the issue into the memory list
   insert: function (duration, project, title, url) {
@@ -86,11 +84,6 @@ const dingTalkDao = {
       if (!uid || uid.length === 0) {
         uid = [`${project}`];
       }
-      this.newOwers.map((item) => {
-        if (item[1] === project) {
-          owerItem.push(item[0])
-        }
-      })
 
       let content = uid.map(id => id === project ? `请${owners[0]}/${project}项目的相关` : `@${id}`).join('');
       content += `老师，有空看下${project}的issue哈, ${this.keyword}需要你：\n`;
