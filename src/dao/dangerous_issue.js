@@ -344,10 +344,9 @@ module.exports = {
     fsDAOImpl.commit();
     dingTalkDao.commit();
   },
-  setDingTalkGroup(groups, owners, newOwers) {
+  setDingTalkGroup(groups, owners ) {
     dingTalkDao.dingGroups = groups;
     dingTalkDao.owners = owners;
-    dingTalkDao.newOwers = newOwers
   },
   getDingTalkDao() {
     return dingTalkDao;
