@@ -239,6 +239,7 @@ function calculateScore_v2_sub(result, to) {
     // log these dangerous issues !
       dangerousIssueDAO.insert(
         issue.duration,
+        issue.owners,
         issue.project,
         issue.title,
         issue.url

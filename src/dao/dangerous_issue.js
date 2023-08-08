@@ -14,8 +14,8 @@ const dingTalkDao = {
   dingGroups: [],
   keyword: "我们的社区",
   owners: new Map(),
-  dingTalkDao:[],
-  newOwers:[],
+  dingTalkDao: [],
+  newOwers: [],
   start: function () { },
   // put the issue into the memory list
   insert: function (duration, project, title, url) {
@@ -81,22 +81,22 @@ const dingTalkDao = {
     // notify
     project2issues.forEach((k, project) => {
       let uid = this.owners.get(project);
-      let owerItem  = []
+      let owners = k.map((item) => item.owners)
 
       if (!uid || uid.length === 0) {
         uid = [`${project}`];
       }
-            this.newOwers.map((item)=>{
-        if(item[1] === project){
+      this.newOwers.map((item) => {
+        if (item[1] === project) {
           owerItem.push(item[0])
         }
       })
-      
-      let content = uid.map(id => id === project ? `请${owerItem}/${project}项目的相关` : `@${id}`).join('');
-        content += `老师，有空看下${project}的issue哈, ${this.keyword}需要你：\n`;
-        content += k.map(issue => `用户等了${issue.duration}天啦: ${issue.url}\n`).join('');
-        // send
-        this.send(content, uid, false, project, true, "issue");
+
+      let content = uid.map(id => id === project ? `请${owners[0]}/${project}项目的相关` : `@${id}`).join('');
+      content += `老师，有空看下${project}的issue哈, ${this.keyword}需要你：\n`;
+      content += k.map(issue => `用户等了${issue.duration}天啦: ${issue.url}\n`).join('');
+      // send
+      this.send(content, uid, false, project, true, "issue");
     });
   },
   isIgnoredTopicType: function (topicTypesIgnore, messageType) {
@@ -343,15 +343,15 @@ module.exports = {
     fsDAOImpl.start();
     dingTalkDao.start();
   },
-  insert: function (duration, project, title, url) {
-    fsDAOImpl.insert(duration, project, title, url);
-    dingTalkDao.insert(duration, project, title, url);
+  insert: function (duration, owners, project, title, url) {
+    fsDAOImpl.insert(duration, owners, project, title, url);
+    dingTalkDao.insert(duration, owners, project, title, url);
   },
   commit: function () {
     fsDAOImpl.commit();
     dingTalkDao.commit();
   },
-  setDingTalkGroup(groups, owners,newOwers) {
+  setDingTalkGroup(groups, owners, newOwers) {
     dingTalkDao.dingGroups = groups;
     dingTalkDao.owners = owners;
     dingTalkDao.newOwers = newOwers
