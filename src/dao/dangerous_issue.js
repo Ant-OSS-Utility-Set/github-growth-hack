@@ -115,7 +115,7 @@ const dingTalkDao = {
   send: function (content, atUid, isAtAll, project, isNegative, topicType) {
     const topicTypeLiveness = "liveness";
     const topicTypeIssue = "issue";
-
+    
     for (let group of this.dingGroups) {
       // 1.validate
       if (group.url == null || group.url.length == 0) {

@@ -20,7 +20,8 @@
     "scan_liveness": "node configs/scan_liveness.js scan",
     "promote_dev": "node configs/scan_dev.js good-first-issue",
     "promote_pre": "node configs/scan_pre.js good-first-issue",
-    "promote_prod": "node configs/scan_prod.js good-first-issue"
+    "promote_prod": "node configs/scan_prod.js good-first-issue",
+    "dispatch": "node configs/config_dispatch.js scan"
   },
   "author": "seeflood",
   "license": "ISC",

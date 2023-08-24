@@ -5,7 +5,7 @@ const { dispatch } = require("./dispatcher");
 // 1. Your github API token
 // We use your token to invoke github graphql api to query some repo data and won't do any modification.
 // see https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#authenticating-with-graphql
-const token = ``;
+const token = `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`;
 
 // 2. Time range.
 // modify it as you like
@@ -21,7 +21,7 @@ let to = utils.today();
 // Parameters in the repos array are:
 // [owner, repo , options(optional) ]
 let repos = [
-  ["mosn", "mosn"],
+  ["mosn", "mosn", { "liveness-check": { enable: true } }],
   [
     "mosn",
     "layotto",
@@ -32,7 +32,7 @@ let repos = [
             type: "dingtalk",
             urls: [
               // IM group bot url
-              "https://oapi.dingtalk.com/robot/send?access_token=XXXXXX",
+              "https://oapi.dingtalk.com/robot/send?access_token=1da27ef8b39690af3b83f1d803c0db0938c1f7bc9ec05da52fd84521b90aefae",
             ],
             title: "XXXX",
             atUid: [],
@@ -41,6 +41,7 @@ let repos = [
         ],
       },
     },
+    { "liveness-check": { enable: true } }
   ],
   [
     "layotto",
@@ -48,25 +49,26 @@ let repos = [
     {
       nickname: "layotto-java-sdk",
     },
+    { "liveness-check": { enable: false } }
   ],
-  ["sofastack", "sofa-tracer"],
-  ["sofastack", "sofa-rpc-node"],
-  ["sofastack", "sofa-rpc"],
-  ["sofastack", "sofa-registry"],
-  ["sofastack", "sofa-jraft"],
-  ["sofastack", "sofa-node"],
-  ["sofastack", "sofa-lookout"],
-  ["sofastack", "sofa-hessian-node"],
-  ["sofastack", "sofa-hessian"],
-  ["sofastack", "sofa-dashboard"],
-  ["sofastack", "sofa-boot"],
-  ["sofastack", "sofa-bolt-python"],
-  ["sofastack", "sofa-bolt-node"],
-  ["sofastack", "sofa-bolt-cpp"],
-  ["sofastack", "sofa-bolt"],
-  ["sofastack", "sofa-ark"],
-  ["sofastack", "sofa-acts"],
-  ["sofastack", "sofa-jarslink"],
+  ["sofastack", "sofa-tracer", { "liveness-check": { enable: false } }],
+  ["sofastack", "sofa-rpc-node", { "liveness-check": { enable: false } }],
+  ["sofastack", "sofa-rpc", { "liveness-check": { enable: false } }],
+  ["sofastack", "sofa-registry", { "liveness-check": { enable: false } }],
+  ["sofastack", "sofa-jraft", { "liveness-check": { enable: false } }],
+  ["sofastack", "sofa-node", { "liveness-check": { enable: false } }],
+  ["sofastack", "sofa-lookout", { "liveness-check": { enable: false } }],
+  ["sofastack", "sofa-hessian-node", { "liveness-check": { enable: false } }],
+  ["sofastack", "sofa-hessian", { "liveness-check": { enable: true } }],
+  ["sofastack", "sofa-dashboard", { "liveness-check": { enable: false } }],
+  ["sofastack", "sofa-boot", { "liveness-check": { enable: true } }],
+  ["sofastack", "sofa-bolt-python", { "liveness-check": { enable: false } }],
+  ["sofastack", "sofa-bolt-node", { "liveness-check": { enable: false } }],
+  ["sofastack", "sofa-bolt-cpp", { "liveness-check": { enable: false } }],
+  ["sofastack", "sofa-bolt", { "liveness-check": { enable: false } }],
+  ["sofastack", "sofa-ark", { "liveness-check": { enable: true } }],
+  ["sofastack", "sofa-acts", { "liveness-check": { enable: false } }],
+  ["sofastack", "sofa-jarslink", { "liveness-check": { enable: false } }],
   ["CeresDB", "ceresdb", { "liveness-check": { enable: false } }],
   ["CeresDB", "ceresmeta", { "liveness-check": { enable: false } }],
   ["CeresDB", "ceresdb-java-client", { "liveness-check": { enable: false } }],
@@ -106,12 +108,12 @@ const dingTalkGroupConfig = {
   groups: [
     {
       // your dingtalk bot url with token as a url parameter
-      url: "",
+      url: "https://oapi.dingtalk.com/robot/send?access_token=1da27ef8b39690af3b83f1d803c0db0938c1f7bc9ec05da52fd84521b90aefae",
       // your dingtalk bot keyword
       keyword: "SOFAStack",
+      issueWarningText: "\n测试:辛苦尽快看下哈，预计在周五下午进行大群报警\n",
       // which project this dingtalk bot care about
       topicProjects: "*",
-      issueWarningText: "",
     },
   ],
   owners: new Map(),
