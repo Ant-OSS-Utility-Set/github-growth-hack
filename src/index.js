@@ -5,7 +5,7 @@ const { dispatch } = require("./dispatcher");
 // 1. Your github API token
 // We use your token to invoke github graphql api to query some repo data and won't do any modification.
 // see https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#authenticating-with-graphql
-const token = `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`;
+const token = ``;
 
 // 2. Time range.
 // modify it as you like
@@ -32,7 +32,7 @@ let repos = [
             type: "dingtalk",
             urls: [
               // IM group bot url
-              "https://oapi.dingtalk.com/robot/send?access_token=1da27ef8b39690af3b83f1d803c0db0938c1f7bc9ec05da52fd84521b90aefae",
+              "",
             ],
             title: "XXXX",
             atUid: [],
@@ -108,7 +108,7 @@ const dingTalkGroupConfig = {
   groups: [
     {
       // your dingtalk bot url with token as a url parameter
-      url: "https://oapi.dingtalk.com/robot/send?access_token=1da27ef8b39690af3b83f1d803c0db0938c1f7bc9ec05da52fd84521b90aefae",
+      url: "",
       // your dingtalk bot keyword
       keyword: "SOFAStack",
       issueWarningText: "\n测试:辛苦尽快看下哈，预计在周五下午进行大群报警\n",
