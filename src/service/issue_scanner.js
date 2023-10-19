@@ -7,6 +7,7 @@ const { weeklyScoreDAO } = require("../dao/weekly_score");
 const sender = require("../dao/dingtalk");
 
 const issueScanner = {
+  // 扫描每一个问题
   scanGoodFirstIssues: function (token, repos, since, to) {
     let filteredRepos = [];
     let idx = 0;
@@ -39,8 +40,6 @@ const issueScanner = {
       arr[i] = listGoodFirstIssues(token, owner, repo, since)
         // 3. send to IM group
         .then(function (issues) {
-          // console.log(issues);
-
           // The data structure looks like:
           // {
           //   easy: [],
@@ -114,6 +113,7 @@ const issueScanner = {
     });
   },
 
+  // 灵活检查
   livenessCheck: function (token, repos, since, to) {
     // 1. start
     dangerousIssueDAO.start();
@@ -155,12 +155,12 @@ const issueScanner = {
             return health;
           }
           resultsArray.forEach((result) => {
-              dangerousIssueDAO.insert(
-                result.duration,
-                result.project,
-                result.title,
-                result.url
-              );
+            dangerousIssueDAO.insert(
+              result.duration,
+              result.project,
+              result.title,
+              result.url
+            );
             if (result.isVeryDangerous) {
               health.isVeryDangerous = true;
             }
@@ -186,7 +186,6 @@ const issueScanner = {
             }
             let success = false;
             for (let i = 0; i < weeksMatter; i++) {
-              console.log(data.rows[i]);
               if (data.rows[i] >= livenessBaseline) {
                 success = true;
               }
@@ -200,9 +199,7 @@ const issueScanner = {
                 `- 存在大于30天未回复的 issue \n` +
                 `- 连续4周活跃度小于20\n` +
                 `请在一周内整改，否则将启动垃圾回收程序，对项目自动归档！\n`;
-              return dangerousIssueDAO
-                .getDingTalkDao()
-                .send(content, null, false, health.repo, false, "liveness");
+              return dangerousIssueDAO.getDingTalkDao().send(content, null, false, health.repo, false, "liveness");
             }
           });
         });
@@ -217,9 +214,7 @@ const issueScanner = {
           `注：liveness check会检查每个项目的健康情况，如果满足下列条件会被归类为“腐烂级”项目：\n` +
           `- 存在大于30天未回复的 issue \n` +
           `- 连续4周活跃度小于20\n`;
-        dangerousIssueDAO
-          .getDingTalkDao()
-          .send(content, null, false, "*", false, "liveness");
+        dangerousIssueDAO.getDingTalkDao().send(content, null, false, "*", false, "liveness");
       }
       dangerousIssueDAO.commit();
       weeklyScoreDAO.commit();
