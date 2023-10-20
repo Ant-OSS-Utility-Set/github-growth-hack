@@ -1,10 +1,12 @@
 const fs = require("fs");
 const { activeContributorsLastMonth } = require("../metrics/contributor");
 
+// 生成上一个月报告
 function generateReportForLastMonth(token, repos, mergeRepo) {
   // write header
   write(`owner,project,active_contributors,month`);
 
+  // 修复一个错误
   fixBug();
   // fetch data
   let arr = [];
@@ -19,6 +21,7 @@ function generateReportForLastMonth(token, repos, mergeRepo) {
   return Promise.all(arr);
 }
 
+// 修复一个错误
 function fixBug() {
   // fix an annoying bug
   // see https://stackoverflow.com/questions/58993308/getting-error-getaddrinfo-enotfound-while-performing-rest-api-call-in-node-js-u
@@ -37,6 +40,7 @@ function fixBug() {
   );
 }
 
+// 向报告文件中追加内容
 function append(content) {
   try {
     fs.appendFileSync("report-month.csv", content + "\n");
@@ -45,6 +49,7 @@ function append(content) {
   }
 }
 
+// 将内容写入报告文件
 function write(content) {
   try {
     fs.writeFileSync("report-month.csv", content + "\n");
