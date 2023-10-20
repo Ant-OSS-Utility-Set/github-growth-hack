@@ -185,15 +185,18 @@ function filterIssuesByCreatedSince(issues, createdSince) {
   // filter out issues
   issues.nodes.forEach((issue) => {
     // Ignore community issues. We only care about the good first issues submitted by our member or owner
+    // 判断是否是社区issue，如果不是社区issue直接返回
     let isCommunityIssue = isCommunityIssue_graphql(issue);
     if (isCommunityIssue) {
       return;
     }
+    // 判读问题是否有作者，如果没有作者直接返回
     if (issue.author == null) {
       // console.log(issue);
       return;
     }
     // check created date
+    // 判断是否早于7天创建，如果是则直接返回
     let createDay = moment(issue.createdAt, "YYYY-MM-DDTHH:mm:ssZ");
     if (moment(createdSince).isAfter(createDay)) {
       return;
@@ -205,7 +208,6 @@ function filterIssuesByCreatedSince(issues, createdSince) {
       labels: issue.labels.edges.map((e) => e.node.name),
     });
   });
-  console.log("After filter: " + result.length + " issues");
   return result;
 }
 const k = 30;
@@ -222,24 +224,33 @@ function filterOutDangerousIssues(issues, to) {
   // filter out those dangerous issues
   issues.nodes.forEach((issue) => {
     // we care only about community issues
+    // 判断是否是社区issue，如果不是社区issue直接返回
     let care = isCommunityIssue_graphql(issue);
     if (!care) {
       return;
     }
+
+    // 判读问题是否有作者，如果没有作者直接返回
     if (issue.author == null) {
-      // console.log(issue);
       return;
     }
+
+    // 判断是否有成员回复了该信息，否则直接返回 
     if (someMemberHasReplied_graphql(issue)) {
       return;
     }
+
+    // 判断该issue是否在白名单中，如果是则直接返回
     if (inWhiteList(issue)) {
       return;
     }
+
+    // 判断是否有特点标签，如果有则直接返回
     if (withSpecialLabels(issue)) {
-      console.log("ignore issue with special labels:" + issue.url);
       return;
     }
+
+    // 判断issue是否早于30天创建，如果是则直接返回
     // check baseline
     let createDay = moment(issue.createdAt, "YYYY-MM-DDTHH:mm:ssZ");
     if (baseline != null && baseline.isAfter(createDay)) {
@@ -256,6 +267,7 @@ function filterOutDangerousIssues(issues, to) {
     if (duration >= mustReplyInXDays) {
       issue.veryDangerous = true;
     }
+
     result.push({
       duration: issue.duration,
       project: issue.repository.name,
@@ -299,7 +311,8 @@ function someMemberHasReplied_graphql(issue) {
     }
     if (
       comment.authorAssociation == "MEMBER" ||
-      comment.authorAssociation == "OWNER"
+      comment.authorAssociation == "OWNER" ||
+      comment.authorAssociation == "CONTRIBUTOR"
     ) {
       return true;
     }

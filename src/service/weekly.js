@@ -13,6 +13,7 @@ const dangerousIssueDAO = require("../dao/dangerous_issue");
 
 let octokit = null;
 
+// 生成报告
 function generateScoreReport(token, repos, mergeRepo, since, to) {
   octokit = new Octokit({
     auth: token,
