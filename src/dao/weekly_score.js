@@ -2,10 +2,14 @@ const fs = require("fs");
 const { getConn, query } = require("./mysql_conn");
 
 const weeklyScoreDAO = {
+  // 启动DAO
   start: function () {
+    // 启动fsDAOImpl
     fsDAOImpl.start();
+    // 启动mysqlDAOImpl
     mysqlDAOImpl.start();
   },
+  // 插入数据
   insert: function (
     rank,
     score,
@@ -24,6 +28,7 @@ const weeklyScoreDAO = {
     toReadable,
     now
   ) {
+    // 插入数据到fsDAOImpl
     fsDAOImpl.insert(
       rank,
       score,
@@ -42,6 +47,7 @@ const weeklyScoreDAO = {
       toReadable,
       now
     );
+    // 插入数据到mysqlDAOImpl
     mysqlDAOImpl.insert(
       rank,
       score,
@@ -61,16 +67,23 @@ const weeklyScoreDAO = {
       now
     );
   },
+  // 列出数据
   list: function (owner, repo, weeks) {
+    // 返回mysqlDAOImpl中的数据
     return mysqlDAOImpl.list(owner, repo, weeks);
   },
+  // 提交
   commit: function () {
+    // 提交fsDAOImpl
     fsDAOImpl.commit();
+    // 提交mysqlDAOImpl
     mysqlDAOImpl.commit();
   },
 };
 const mysqlDAOImpl = {
+  // 初始化函数
   start: function () {},
+  // 插入函数
   insert: function (
     rank,
     score,
@@ -89,11 +102,14 @@ const mysqlDAOImpl = {
     toReadable,
     now
   ) {
+    // 获取连接
     let conn = getConn();
+    // 如果连接为空，则返回
     if (conn == null) {
       // console.log("mysql connection is null");
       return;
     }
+    // 构建sql语句
     sql =
       `INSERT INTO \`github_repo_weekly\` (\`date_from\`, \`date_to\`, \`record_date\`, \`rank\`, \`score\`, \`owner\`, \`project\`, \`new_stars\`, \`new_contributors\`, \`new_forks\`, \`new_pr\`, \`closed_pr\`, \`new_issues\`, \`closed_issues\`, \`pr_comment\`, \`issue_comment\`)` +
       ` VALUES ("${sinceReadable}","${toReadable}","${now}"` +
@@ -103,7 +119,9 @@ const mysqlDAOImpl = {
       `,${new_pr},${closed_pr}` +
       `,${new_issues},${closed_issues}` +
       `,${pr_comment},${issue_comment})`;
+    // 执行sql语句
     conn.query(sql, function (err, result) {
+      // 如果出错，则抛出错误
       if (err) {
         console.log(err);
         throw err;
@@ -111,7 +129,9 @@ const mysqlDAOImpl = {
       // console.log("Result: " + result);
     });
   },
+  // 列出函数
   list: function (owner, repo, weeks) {
+    // 查询指定项目，按照id降序排列，取4条数据
     return query(
       `SELECT * FROM \`github_repo_weekly\` where project='${repo}' order by id desc LIMIT 4`
     );
@@ -122,27 +142,37 @@ const mysqlDAOImpl = {
     //     }
     // })
   },
+  // 提交函数
   commit: function () {
+    // 获取连接
     let conn = getConn();
+    // 如果连接为空，则返回
     if (conn == null) {
       // console.log("mysql connection is null");
       return;
     }
+    // // 提交事务
     // conn.commit(function (err) {
+    //   // 如果有错误，则抛出错误
     //   console.log(err);
     // });
+    // 关闭连接
     conn.end();
   },
 };
 const fsDAOImpl = {
+  // 初始化
   start: function () {
+    // 英文
     this.startEn(
       `rank\tscore\towner\tproject\tnew_stars\tnew_contributors\tnew_forks\tnew_pr\tclosed_pr\tnew_issues\tclosed_issues\tpr_comment\tissue_comment\tdate_from\tdate_to\trecord_date`
     );
+    // 中文
     this.startZh(
       `排名,活跃度得分,组织,项目,新增star,新增contributor,fork,new_pr,close_pr,new_issues,close_issues,pr_comment,issue_comment,date_from,date_to,record_date`
     );
   },
+  // 英文
   startEn: function (content) {
     console.log(content);
     // write files
@@ -155,6 +185,7 @@ const fsDAOImpl = {
     }
   },
 
+  // 中文
   startZh: function (content) {
     // write files
     // need to add BOM header,see
@@ -166,7 +197,9 @@ const fsDAOImpl = {
     }
   },
 
+  // 内容
   _content: "",
+  // 插入
   insert: function (
     rank,
     score,
@@ -191,6 +224,7 @@ const fsDAOImpl = {
     content = content.replace(/\t/g, ",");
     this._content = this._content + content + "\n";
   },
+  // 提交
   commit: function () {
     fs.appendFile("report.csv", this._content, function (err) {
       if (err) {

@@ -7,13 +7,11 @@ const { weeklyScoreDAO } = require("../dao/weekly_score");
 const sender = require("../dao/dingtalk");
 
 const issueScanner = {
-  // 扫描每一个问题
   scanGoodFirstIssues: function (token, repos, since, to) {
+    // 过滤出 good first issue 的仓库
     let filteredRepos = [];
     let idx = 0;
-    // 1. filter repos
     for (let i = 0; i < repos.length; i++) {
-      // check options
       let options = repos[i][2];
       if (
         options != null &&
@@ -21,7 +19,6 @@ const issueScanner = {
         options["good-first-issue-notifier"]["channels"] != null &&
         options["good-first-issue-notifier"]["channels"].length > 0
       ) {
-        // add this repo to the `filteredRepos`
         filteredRepos[idx] = repos[i];
         idx++;
       }
@@ -29,16 +26,14 @@ const issueScanner = {
     if (filteredRepos.length == 0) {
       return;
     }
-    // 2. fetch good first issues
     let arr = [];
     for (let i = 0; i < filteredRepos.length; i++) {
       const owner = filteredRepos[i][0];
       const repo = filteredRepos[i][1];
       const options = filteredRepos[i][2];
 
-      // fetch data
+      // 扫描仓库中的 good first issue
       arr[i] = listGoodFirstIssues(token, owner, repo, since)
-        // 3. send to IM group
         .then(function (issues) {
           // The data structure looks like:
           // {
@@ -62,29 +57,24 @@ const issueScanner = {
           //   unknown: []
           // }
 
-          // 3.1. Generate promotion text
           let text = `${repo} 新增了几个 good first issue, 欢迎感兴趣的朋友认领! \n\r`;
 
           let hasKnownIssues = false;
-          // easy
           if (issues.easy.length > 0) {
             text += "- Easy \n\r";
             text = appendGoodFirstIssues(text, issues.easy);
             hasKnownIssues = true;
           }
-          // medium
           if (issues.medium.length > 0) {
             text += "- Medium \n\r";
             text = appendGoodFirstIssues(text, issues.medium);
             hasKnownIssues = true;
           }
-          // hard
           if (issues.hard.length > 0) {
             text += "- Hard \n\r";
             text = appendGoodFirstIssues(text, issues.hard);
             hasKnownIssues = true;
           }
-          // unknown
           if (issues.unknown.length > 0) {
             if (hasKnownIssues) {
               text += "- 其他 \n\r";
@@ -92,12 +82,11 @@ const issueScanner = {
             text = appendGoodFirstIssues(text, issues.unknown);
           }
 
-          // 3.2. don't send message if there's no issue
           if (!hasKnownIssues && issues.unknown.length == 0) {
             return;
           }
 
-          // 3.3. send to IM groups
+          // 发送消息
           options["good-first-issue-notifier"]["channels"].forEach((ch) => {
             if (ch["type"] == "dingtalk") {
               sender.sendMarkdown(ch.urls, text, ch.title, ch.atUid, ch.atAll);
@@ -107,22 +96,18 @@ const issueScanner = {
           });
         });
     }
-    // 4. finish
     Promise.all(arr).then((results) => {
       console.log("All scanned!");
     });
   },
 
-  // 灵活检查
   livenessCheck: function (token, repos, since, to) {
-    // 1. start
+    // 开始进行不活跃检查
     dangerousIssueDAO.start();
     let filteredRepos = [];
     let idx = 0;
-    // 2. filter repos
+    // 过滤掉不活跃检查被禁用的项目
     for (let i = 0; i < repos.length; i++) {
-      // check config
-      // if there is no need to check this repo, ignore it.
       if (
         repos[i][2] != null &&
         repos[i][2]["liveness-check"] != null &&
@@ -130,20 +115,18 @@ const issueScanner = {
       ) {
         continue;
       }
-      // else, add this repo to the `filteredRepos`
       filteredRepos[idx] = repos[i];
       idx++;
     }
-    // 3. collect data
     let arr = [];
     let allPassLivenessCheck = true;
+    // 检查每一个项目
     for (let i = 0; i < filteredRepos.length; i++) {
       const owner = filteredRepos[i][0];
       const repo = filteredRepos[i][1];
 
-      // fetch data
+      // 获取每一个项目的不活跃检查结果
       arr[i] = listDangerousOpenIssues(token, owner, repo, to)
-        // write dangerous issues
         .then(function (resultsArray) {
           let health = {
             owner: owner,
@@ -154,12 +137,14 @@ const issueScanner = {
           if (resultsArray.length == 0) {
             return health;
           }
+          // 插入不活跃检查结果
           resultsArray.forEach((result) => {
             dangerousIssueDAO.insert(
               result.duration,
               result.project,
               result.title,
-              result.url
+              result.url,
+              result.keyword,
             );
             if (result.isVeryDangerous) {
               health.isVeryDangerous = true;
@@ -168,13 +153,12 @@ const issueScanner = {
           return health;
         })
         .then(function (health) {
-          // trigger liveness check
           if (!health.isVeryDangerous) {
             return health;
           }
           const weeksMatter = 4;
           const livenessBaseline = 20;
-          // query scores in history
+          // 获取项目活跃度
           let scores = weeklyScoreDAO.list(
             health.owner,
             health.repo,
@@ -185,6 +169,7 @@ const issueScanner = {
               return;
             }
             let success = false;
+            // 检查项目活跃度是否满足要求
             for (let i = 0; i < weeksMatter; i++) {
               if (data.rows[i] >= livenessBaseline) {
                 success = true;
@@ -192,7 +177,6 @@ const issueScanner = {
             }
             if (!success) {
               allPassLivenessCheck = false;
-              // warning
               let content =
                 `${health.repo} 健康检查 (liveness check) 失败!\n` +
                 `该项目满足以下条件，被归类为“腐烂级”项目：\n` +
@@ -204,10 +188,9 @@ const issueScanner = {
           });
         });
     }
-    // 4. commit
+    // 等待所有项目检查完毕
     Promise.all(arr).then((results) => {
       if (allPassLivenessCheck) {
-        // congratulations!
         let content =
           `活跃度检查 (liveness check)结果：所有项目通过了活跃度检查!\n` +
           `\n` +
@@ -216,23 +199,23 @@ const issueScanner = {
           `- 连续4周活跃度小于20\n`;
         dangerousIssueDAO.getDingTalkDao().send(content, null, false, "*", false, "liveness");
       }
+      // 提交不活跃检查结果
       dangerousIssueDAO.commit();
+      // 提交活跃度检查结果
       weeklyScoreDAO.commit();
     });
   },
 };
 
+// 遍历issues数组，将每一项的title属性按照";"分割，取出第一项，并去除前后空格，拼接到text字符串后面，最后返回text
 function appendGoodFirstIssues(text, issues) {
   issues.forEach((issue) => {
-    // Try to get chinese title
     let titles = issue.title.split(";");
     let title = titles[0];
     if (titles[1] != null) {
       title = titles[1];
     }
     title = title.trim();
-
-    // append text
     text = text + `${title}: ${issue.url} \n\r`;
   });
   return text;

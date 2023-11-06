@@ -36,6 +36,7 @@ function dispatch(
 
 // 定义一个函数doDispatch，用于调度
 function doDispatch(token, repos, mergeRepo, since, to, dingTalkGroupConfig) {
+  // 获取命令行参数
   const args = process.argv.slice(2);
 
   if (args[0] == "month") {
@@ -43,7 +44,7 @@ function doDispatch(token, repos, mergeRepo, since, to, dingTalkGroupConfig) {
     monthly.generateReportForLastMonth(token, repos, mergeRepo);
   } else if (args[0] == "scan") {
     // 设置钉钉群
-    setDingTalkGroup(dingTalkGroupConfig.groups, dingTalkGroupConfig.owners,repos);
+    setDingTalkGroup(dingTalkGroupConfig.groups, dingTalkGroupConfig.owners, repos);
     // 扫描危险问题
     issueScanner.livenessCheck(token, repos, since, to);
   } else if (args[0] == "good-first-issue") {
