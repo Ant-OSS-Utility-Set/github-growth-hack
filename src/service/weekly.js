@@ -32,60 +32,10 @@ async function start(token, repos, mergeRepo, since, to) {
   // 启动dangerousIssueDAO
   dangerousIssueDAO.start();
 
-  // 创建一个空数组arr
-  let arr = [];
-  // 遍历repos数组
-  for (let i = 0; i < repos.length; i++) {
-    // 获取repos数组中的owner和repo
-    const owner = repos[i][0];
-    const repo = repos[i][1];
-
-    // 获取repos数组中的nickName
-    let nickName = repo;
-    // 如果repos数组中的第三个元素不为空，且第三个元素的nickname不为空，则获取nickName
-    if (repos[i][2] != null && repos[i][2]["nickname"] != null) {
-      nickName = repos[i][2]["nickname"];
-    }
-    // 调用collectIssueData函数，获取issue数据
-    const promiseIssue = collectIssueData(owner, repo, since);
-    // 调用countStarsAndForks函数，获取star和fork数据
-    const promiseStarFork = countStarsAndForks(token, owner, repo, since);
-    // 调用countNewContributors函数，获取新贡献者数据
-    const promiseContributor = countNewContributors(token, owner, repo, since);
-    // 调用listOpenIssues函数，获取openIssues数据
-    const promiseOpenIssues = listOpenIssues(token, owner, repo);
-
-    // 将promiseIssue，promiseStarFork，promiseContributor，promiseOpenIssues放入arr数组中
-    arr[i] = Promise.all([
-      promiseIssue,
-      promiseStarFork,
-      promiseContributor,
-      promiseOpenIssues,
-    ]).then(function (results) {
-      // 获取results数组中的第一个元素
-      const result = results[0];
-      // 获取results数组中的第二个元素，赋值给result的new_stars
-      result.new_stars = results[1].star;
-      // 获取results数组中的第三个元素，赋值给result的new_forks
-      result.new_forks = results[1].fork;
-      // 获取results数组中的第四个元素，赋值给result的new_contributors
-      result.new_contributors = results[2].new_contributors;
-      // 获取results数组中的第五个元素，赋值给result的openIssues
-      result.openIssues = results[3];
-      // 获取repos数组中的第一个元素，赋值给result的nickName
-      result.nickName = nickName;
-      // 获取repos数组中的第一个元素，赋值给result的owner
-      result.owner = owner;
-      // 获取repos数组中的第一个元素，赋值给result的repo
-      result.repo = repo;
-      // 返回result
-      return result;
-    });
-  }
-  // 等待arr数组中的每一个元素执行完毕
-  arr = await Promise.all(arr);
+  // 循环repos
+  const arr = await processRepos(token,repos,since);
   // 创建一个Map，用于存储repo2project
-  repo2project = new Map();
+  let repo2project = new Map();
   // 遍历arr数组
   arr.forEach((project) => {
     // 获取project的owner和repo，拼接成key
@@ -95,56 +45,50 @@ async function start(token, repos, mergeRepo, since, to) {
       repo2project.set(key, project);
     }
   });
-  // 遍历arr数组
+
+  //合并仓库
+  await mergeRepoToOtherRepo(arr,mergeRepo,repo2project);
+  //插入数据库
+  insertDbAndDingTalk(repo2project,since,to);
+  // 提交weeklyScoreDAO
+  weeklyScoreDAO.commit();
+  // 提交dangerousIssueDAO
+  dangerousIssueDAO.commit();
+}
+
+/**
+ * 合并仓库
+ * @param arr
+ * @param repo2project
+ * @returns {Promise<void>}
+ */
+async function mergeRepoToOtherRepo(arr, mergeRepo,repo2project) {
   for (let i = 0; i < arr.length; i++) {
-    // 获取arr数组中的每一个元素
     let project = arr[i];
-    // 获取project的owner和repo，拼接成key
     let key = project.owner + "/" + project.repo;
-    // 如果mergeRepo[key]为空，则跳过
     if (mergeRepo[key] == null) {
       continue;
     }
-    // 打印出key，表示需要合并
     console.log(key + " should be merged");
-    // 调用moveIssuesToOtherRepo函数，将project中的closeIssue移动到mergeRepo[key]中
-    await moveIssuesToOtherRepo(
-      project.closeIssue,
-      mergeRepo[key],
-      repo2project,
-      (project) => project.closeIssue
-    );
-
-    // 调用moveIssuesToOtherRepo函数，将project中的closePr移动到mergeRepo[key]中
-    await moveIssuesToOtherRepo(
-      project.closePr,
-      mergeRepo[key],
-      repo2project,
-      (project) => project.closePr
-    );
-
-    // 调用moveIssuesToOtherRepo函数，将project中的newPr移动到mergeRepo[key]中
-    await moveIssuesToOtherRepo(
-      project.newPr,
-      mergeRepo[key],
-      repo2project,
-      (project) => project.newPr
-    );
-
-    // 调用moveIssuesToOtherRepo函数，将project中的newIssue移动到mergeRepo[key]中
-    await moveIssuesToOtherRepo(
-      project.newIssue,
-      mergeRepo[key],
-      repo2project,
-      (project) => project.newIssue
-    );
+    await moveIssuesToOtherRepo(project.closeIssue, mergeRepo[key], repo2project, (project) => project.closeIssue);
+    await moveIssuesToOtherRepo(project.closePr, mergeRepo[key], repo2project, (project) => project.closePr);
+    await moveIssuesToOtherRepo(project.newPr, mergeRepo[key], repo2project, (project) => project.newPr);
+    await moveIssuesToOtherRepo(project.newIssue, mergeRepo[key], repo2project, (project) => project.newIssue);
   }
-  // 创建一个空数组arr
-  arr = [];
+}
+
+/**
+ * 插入数据库
+ * @param repo2project
+ * @param since
+ * @param to
+ */
+function insertDbAndDingTalk(repo2project,since,to){
+  let arr = [];
   // 遍历repo2project
   let i = 0;
   // 调用calculateScore_v2_sub函数，计算score，将计算结果放入arr数组中
-  repo2project.forEach((v, k) => (arr[i++] = calculateScore_v2_sub(v, to)));
+  repo2project.forEach((v, k) => (arr[i++] = calculateScore_v2_subAndInsertDingtTask(v, to)));
   // 对arr数组进行排序，按照score降序排列
   arr.sort((a, b) => {
     return b.score - a.score;
@@ -167,7 +111,7 @@ async function start(token, repos, mergeRepo, since, to) {
     // 获取arr数组中的每一个元素的rank
     let rank = i + 1;
     // 如果i大于0，且arr数组中的每一个元素的score等于prevScore，则将arr数组中的每一个元素的rank赋值给rank
-    if (i > 0 && result.score == prevScore) {
+    if (i > 0 && result.score === prevScore) {
       rank = prevRank;
     } else {
       // 否则，将arr数组中的每一个元素的score赋值给prevScore，将arr数组中的每一个元素的rank赋值给prevRank
@@ -176,30 +120,72 @@ async function start(token, repos, mergeRepo, since, to) {
     }
     // 调用weeklyScoreDAO的insert函数，将计算结果插入到数据库中
     weeklyScoreDAO.insert(
-      rank,
-      result.score,
-      result.owner,
-      result.nickName,
-      result.new_stars,
-      result.new_contributors,
-      result.new_forks,
-      result.newPr.size,
-      result.closePr.size,
-      result.newIssue.size,
-      result.closeIssue.size,
-      result.prComment.size,
-      result.issueComment.size,
-      sinceReadable,
-      toReadable,
-      now
+        rank,
+        result.score,
+        result.owner,
+        result.nickName,
+        result.new_stars,
+        result.new_contributors,
+        result.new_forks,
+        result.newPr.size,
+        result.closePr.size,
+        result.newIssue.size,
+        result.closeIssue.size,
+        result.prComment.size,
+        result.issueComment.size,
+        sinceReadable,
+        toReadable,
+        now
     );
   }
-  // 提交weeklyScoreDAO
-  weeklyScoreDAO.commit();
-  // 提交dangerousIssueDAO
-  dangerousIssueDAO.commit();
+}
+/**
+ * 遍历repos，获取结果数据
+ * @param token
+ * @param repos
+ * @param since
+ * @returns {Promise<Awaited<unknown>[]>}
+ */
+async function processRepos(token, repos, since) {
+  let arr = [];
+  for (let i = 0; i < repos.length; i++) {
+    const owner = repos[i][0];
+    const repo = repos[i][1];
+    const option = repos[i][2];
+    const nickName = getNickName(repo, repos[i][2]);
+    const promiseIssue = collectIssueData(owner, repo, since);
+    const promiseStarFork = countStarsAndForks(token, owner, repo, since);
+    const promiseContributor = countNewContributors(token, owner, repo, since);
+    const promiseOpenIssues = listOpenIssues(token, owner, repo);
+    arr[i] = Promise.all([promiseIssue, promiseStarFork, promiseContributor, promiseOpenIssues])
+        .then(function (results) {
+          const result = results[0];
+          result.new_stars = results[1].star;
+          result.new_forks = results[1].fork;
+          result.new_contributors = results[2].new_contributors;
+          result.openIssues = results[3];
+          result.nickName = nickName;
+          result.owner = owner;
+          result.repo = repo;
+          result.option = option;
+          return result;
+        });
+  }
+  arr =  Promise.all(arr);
+  return arr;
 }
 
+function getNickName(repo, repoOption) {
+  let nickName = repo;
+  if (repoOption != null && repoOption["nickname"] != null) {
+    nickName = repoOption["nickname"];
+  }
+  return nickName;
+}
+
+
+//--------------------------------下面的都是工具函数，不涉及到主要业务逻辑。||||||||||||||||||||||||||||||
+//----------------------------------------------------------------------------||
 // 异步函数，用于将issues移动到其他仓库
 async function moveIssuesToOtherRepo(
   // issuesToCheck：需要检查的issues
@@ -215,8 +201,15 @@ async function moveIssuesToOtherRepo(
   for (let issue of issuesToCheck) {
     let targetKey;
     try {
-      // 调用mergeFunc函数，获取targetKey
-      targetKey = await mergeFunc(issue);
+      if(typeof mergeFunc === 'string'){
+        targetKey =  mergeFunc;
+      }else if(typeof mergeFunc === 'function'){
+        // 调用mergeFunc函数，获取targetKey
+        targetKey = await mergeFunc(issue);
+      }else{
+        console.log("mergeFunction 不是标准格式")
+        return;
+      }
     } catch (error) {
       // 捕获错误，并打印错误信息
       console.error("mergeFunc error: " + error);
@@ -235,27 +228,21 @@ async function moveIssuesToOtherRepo(
 
 // 计算分数
 function calculateScore(result) {
-  // console.log(result);
-  let score =
-    // 计算issue评论数量
-    result.issueComment.size +
-    // 计算新issue数量
-    2 * result.newIssue.size +
-    // 计算新pr数量
-    3 * result.newPr.size +
-    // 计算pr评论数量
-    4 * result.prComment.size +
-    // 计算关闭pr数量
-    2 * result.closePr.size +
-    // 计算新star数量
-    result.new_stars +
-    // 计算新fork数量
-    2 * result.new_forks +
-    // 计算新贡献者数量
-    5 * result.new_contributors;
-  // console.log(result.closeIssue);
-  // console.log(result.closePr);
-  result.score = score;
+  result.score = result.issueComment.size +
+      // 计算新issue数量
+      2 * result.newIssue.size +
+      // 计算新pr数量
+      3 * result.newPr.size +
+      // 计算pr评论数量
+      4 * result.prComment.size +
+      // 计算关闭pr数量
+      2 * result.closePr.size +
+      // 计算新star数量
+      result.new_stars +
+      // 计算新fork数量
+      2 * result.new_forks +
+      // 计算新贡献者数量
+      5 * result.new_contributors;
   return result;
 }
 
@@ -291,7 +278,7 @@ function calculateScore_v2_add(result) {
 }
 
 // 计算分数函数，用于计算分数
-function calculateScore_v2_sub(result, to) {
+function calculateScore_v2_subAndInsertDingtTask(result, to) {
   // 计算分数
   result = calculateScore(result);
 
@@ -299,18 +286,21 @@ function calculateScore_v2_sub(result, to) {
   const k1 = 5;
   const k2 = 7;
   // 过滤出有危险问题的列表
-  filterOutDangerousIssues(result.openIssues, to).forEach((issue) => {
-      // 插入到数据库中
-      dangerousIssueDAO.insert(
+  let dangerousIssues = filterOutDangerousIssues(result.openIssues, to,result.owner,result.repo);
+  dangerousIssues.forEach((issue) => {
+    // 插入到数据库中
+    dangerousIssueDAO.insert(
         issue.duration,
         issue.project,
         issue.title,
-        issue.url
-      ); 
+        issue.url,
+        issue.keyword,
+        result.option
+    );
     // 如果是非常危险的问题，分数减去k2
     if (issue.isVeryDangerous) {
       result.score -= k2;
-    // 否则，分数减去k1
+      // 否则，分数减去k1
     } else {
       result.score -= k1;
     }

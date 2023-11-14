@@ -2,7 +2,7 @@ const fs = require("fs");
 const { activeContributorsLastMonth } = require("../metrics/contributor");
 
 // 生成上一个月报告
-function generateReportForLastMonth(token, repos, mergeRepo) {
+function generateReportForLastMonth(token, repos) {
   // write header
   write(`owner,project,active_contributors,month`);
 

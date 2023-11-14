@@ -227,6 +227,7 @@ function filterIssuesByCreatedSince(issues, createdSince) {
       labels: issue.labels.edges.map((e) => e.node.name),
     });
   });
+  console.log("good issue过滤结果："+result.length)
   // 返回过滤后的结果
   return result;
 }
@@ -238,12 +239,12 @@ async function listDangerousOpenIssues(token, owner, repo, to) {
   // 调用listOpenIssues函数，获取所有
   return listOpenIssues(token, owner, repo).then((issues) =>
     // 调用filterOutDangerousIssues函数，过滤出危险
-    filterOutDangerousIssues(issues, to)
+    filterOutDangerousIssues(issues, to,owner,repo)
   );
 }
 
 // 过滤出危险的
-function filterOutDangerousIssues(issues, to) {
+function filterOutDangerousIssues(issues, to,owner,repo) {
   const result = [];
   // filter out those dangerous issues
   // 遍历所有issues
@@ -304,8 +305,10 @@ function filterOutDangerousIssues(issues, to) {
       keyword: issue.url.split('/')[3],
     });
   });
-  console.log('过滤后的问题',result)
-  
+  if(result.length !==0){
+    console.log('有问题的issue：',result.length,owner,repo)
+  }
+
   return result;
 }
 

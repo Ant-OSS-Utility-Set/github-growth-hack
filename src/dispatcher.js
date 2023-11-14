@@ -21,8 +21,7 @@ function dispatch(
   if (token == null || token.length < 40) {
     throw new Error("Please set your github token in src/index.js");
   }
-  // set config
-  // 危险Issues问题
+  //危险Issues问题
   if (dangerousIssuesConfig != null) {
     // 应该回复天数
     shouldReplyInXDays(dangerousIssuesConfig.shouldReplyInXDays);
@@ -30,29 +29,27 @@ function dispatch(
     mustReplyInXDays(dangerousIssuesConfig.mustReplyInXDays);
   }
   setConfig(mysqlConfig, () =>
-    doDispatch(token, repos, mergeRepo, since, to, dingTalkGroupConfig)
+    doDispatch(token, repos, mergeRepo, since, to,dingTalkGroupConfig)
   );
 }
 
 // 定义一个函数doDispatch，用于调度
-function doDispatch(token, repos, mergeRepo, since, to, dingTalkGroupConfig) {
+function doDispatch(token, repos,mergeRepo, since, to,dingTalkGroupConfig) {
   // 获取命令行参数
   const args = process.argv.slice(2);
 
-  if (args[0] == "month") {
-    // 生成上月报告
-    monthly.generateReportForLastMonth(token, repos, mergeRepo);
-  } else if (args[0] == "scan") {
-    // 设置钉钉群
-    setDingTalkGroup(dingTalkGroupConfig.groups, dingTalkGroupConfig.owners, repos);
-    // 扫描危险问题
-    issueScanner.livenessCheck(token, repos, since, to);
-  } else if (args[0] == "good-first-issue") {
-    // 扫描好的问题
+  if (args[0] === "month") {
+    // 生成月度CSV文件
+    monthly.generateReportForLastMonth(token, repos);
+  } else if (args[0] === "scan") {
+    // 扫描issue，发送issue\liveliness钉钉消息
+    issueScanner.livenessCheck(token, repos, since, to,dingTalkGroupConfig);
+  } else if (args[0] === "good-first-issue") {
+    // 扫描需要认领的issue，发送good-first-issue钉钉消息
     issueScanner.scanGoodFirstIssues(token, repos, since, to);
   } else {
-    // 生成报告
-    weekly.generateScoreReport(token, repos, mergeRepo, since, to);
+    // 生成周CSV文件，插入MySQL数据库，发送issue钉钉消息
+    weekly.generateScoreReport(token, repos, mergeRepo,since, to);
   }
 }
 

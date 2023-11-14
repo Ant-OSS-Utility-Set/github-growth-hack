@@ -1,6 +1,6 @@
 const {
   listDangerousOpenIssues,
-  listGoodFirstIssues,
+  listGoodFirstIssues, shouldReplyInXDays, mustReplyInXDays,
 } = require("../metrics/issues");
 const dangerousIssueDAO = require("../dao/dangerous_issue");
 const { weeklyScoreDAO } = require("../dao/weekly_score");
@@ -23,7 +23,7 @@ const issueScanner = {
         idx++;
       }
     }
-    if (filteredRepos.length == 0) {
+    if (filteredRepos.length === 0) {
       return;
     }
     let arr = [];
@@ -83,12 +83,13 @@ const issueScanner = {
           }
 
           if (!hasKnownIssues && issues.unknown.length == 0) {
+            console.log("没有需要认领的issue")
             return;
           }
 
-          // 发送消息
+          // 发送消息,atUid就是@某个人
           options["good-first-issue-notifier"]["channels"].forEach((ch) => {
-            if (ch["type"] == "dingtalk") {
+            if (ch["type"] === "dingtalk") {
               sender.sendMarkdown(ch.urls, text, ch.title, ch.atUid, ch.atAll);
             } else {
               console.error(`channel ${ch["type"]} not supported!`);
@@ -101,7 +102,7 @@ const issueScanner = {
     });
   },
 
-  livenessCheck: function (token, repos, since, to) {
+  livenessCheck: function (token, repos, since, to,globalDingTalkGroupConfig) {
     // 开始进行不活跃检查
     dangerousIssueDAO.start();
     let filteredRepos = [];
@@ -124,17 +125,28 @@ const issueScanner = {
     for (let i = 0; i < filteredRepos.length; i++) {
       const owner = filteredRepos[i][0];
       const repo = filteredRepos[i][1];
+      const option = filteredRepos[i][2];
+      //单独设置每个repo的属性
+      let dangerousIssuesConfig = option['dangerousIssuesConfig']
+      // 危险Issues问题
+      if (dangerousIssuesConfig != null) {
+        // 应该回复天数
+        shouldReplyInXDays(dangerousIssuesConfig.shouldReplyInXDays);
+        // 必须回复天数
+        mustReplyInXDays(dangerousIssuesConfig.mustReplyInXDays);
+      }
 
-      // 获取每一个项目的不活跃检查结果
+      // 获取每一个项目的不活跃检查结果,插入“存储里面CSV、临时数组等”
       arr[i] = listDangerousOpenIssues(token, owner, repo, to)
         .then(function (resultsArray) {
           let health = {
             owner: owner,
             repo: repo,
+            option:option,
             dangerousOpenIssues: resultsArray,
             isVeryDangerous: false,
           };
-          if (resultsArray.length == 0) {
+          if (resultsArray.length === 0) {
             return health;
           }
           // 插入不活跃检查结果
@@ -145,6 +157,7 @@ const issueScanner = {
               result.title,
               result.url,
               result.keyword,
+              option
             );
             if (result.isVeryDangerous) {
               health.isVeryDangerous = true;
@@ -152,20 +165,21 @@ const issueScanner = {
           });
           return health;
         })
+          //如不是不健康的，再次获取周检查分数,发生dangerous基本的警告
         .then(function (health) {
           if (!health.isVeryDangerous) {
             return health;
           }
           const weeksMatter = 4;
           const livenessBaseline = 20;
-          // 获取项目活跃度
+          // 获取项目周活跃度
           let scores = weeklyScoreDAO.list(
             health.owner,
             health.repo,
             weeksMatter
           );
           return scores.then(function (data) {
-            if (data == null || data.rows == null || data.rows.length == 0) {
+            if (data == null || data.rows == null || data.rows.length === 0) {
               return;
             }
             let success = false;
@@ -175,6 +189,7 @@ const issueScanner = {
                 success = true;
               }
             }
+            //检查活跃度liveness失败，直接发钉钉通知
             if (!success) {
               allPassLivenessCheck = false;
               let content =
@@ -183,7 +198,7 @@ const issueScanner = {
                 `- 存在大于30天未回复的 issue \n` +
                 `- 连续4周活跃度小于20\n` +
                 `请在一周内整改，否则将启动垃圾回收程序，对项目自动归档！\n`;
-              return dangerousIssueDAO.getDingTalkDao().send(content, null, false, health.repo, false, "liveness");
+              return dangerousIssueDAO.getDingTalkDao().send(content, null, false, health.repo, false, "liveness",option);
             }
           });
         });
@@ -197,11 +212,11 @@ const issueScanner = {
           `注：liveness check会检查每个项目的健康情况，如果满足下列条件会被归类为“腐烂级”项目：\n` +
           `- 存在大于30天未回复的 issue \n` +
           `- 连续4周活跃度小于20\n`;
-        dangerousIssueDAO.getDingTalkDao().send(content, null, false, "*", false, "liveness");
+        dangerousIssueDAO.getDingTalkDao().send(content, null, false, "*", false, "liveness",null,{"dingTalkGroupConfig":globalDingTalkGroupConfig});
       }
       // 提交不活跃检查结果
       dangerousIssueDAO.commit();
-      // 提交活跃度检查结果
+      // 提交活跃度检查结果，插入数据库或者CSV文件
       weeklyScoreDAO.commit();
     });
   },
