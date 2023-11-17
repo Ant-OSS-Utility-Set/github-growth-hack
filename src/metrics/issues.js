@@ -1,10 +1,11 @@
 const fetch = require("node-fetch");
 const moment = require("moment"); // require
+const config = require("../../configs/config.json");
 
 // 设置回复在X天内的天数，默认值5天
-let shouldReplyInXDays = 5;
+let shouldReplyInXDays = config.generalConfig.dangerousIssuesConfig.shouldReplyInXDays;
 // 设置必须回复在X天内的天数。默认值30天
-let mustReplyInXDays = 30;
+let mustReplyInXDays = config.generalConfig.dangerousIssuesConfig.mustReplyInXDays;
 // async函数listOpenIssues，用于获取指定仓库的open issues
 // 参数：token：GitHub的token；owner：仓库所有者；repo：仓库名
 // 返回：仓库的open issues列表
@@ -231,8 +232,6 @@ function filterIssuesByCreatedSince(issues, createdSince) {
   // 返回过滤后的结果
   return result;
 }
-const k = 30;
-const baseline = moment().subtract(k,'days')
 
 // 异步函数，用于列出危险
 async function listDangerousOpenIssues(token, owner, repo, to) {
@@ -277,20 +276,21 @@ function filterOutDangerousIssues(issues, to,owner,repo) {
       return;
     }
 
-    // 判断issue是否早于30天创建，如果是则直接返回
+    // 判断issue是否早30天创建，如果是则直接返回
     // check baseline
     let createDay = moment(issue.createdAt, "YYYY-MM-DDTHH:mm:ssZ");
-    if (baseline != null && baseline.isAfter(createDay)) {
-      return;
-    }
+    // const baseline = moment().subtract(mustReplyInXDays,'days')
+    // if (baseline != null && baseline.isAfter(createDay)) {
+    //   return;
+    // }
     // check duration
     let duration = moment(to).diff(createDay, "day");
     issue.duration = duration;
-    // 判断问题是否在X天内创建
+    // 判断问题是否在5天内创建,小于5天的不是dangerous  issue
     if (duration < shouldReplyInXDays) {
       return;
     }
-    // 判断问题是否在X天内没有回复
+    // 大于30算是dangerous
     // this is a dangerous issue !
     issue.veryDangerous = false;
     if (duration >= mustReplyInXDays) {

@@ -1,8 +1,9 @@
 const fs = require("fs");
 const { activeContributorsLastMonth } = require("../metrics/contributor");
+const { configNames } = require("../const.js");
 
 // 生成上一个月报告
-function generateReportForLastMonth(token, repos) {
+function generateReportForLastMonth(config) {
   // write header
   write(`owner,project,active_contributors,month`);
 
@@ -10,13 +11,19 @@ function generateReportForLastMonth(token, repos) {
   fixBug();
   // fetch data
   let arr = [];
-  for (let i = 0; i < repos.length; i++) {
-    let repo = repos[i];
-    arr[i] = activeContributorsLastMonth(repo[0], repo[1]).then((res) => {
-      // write
-      append(`${res.owner},${res.repo},${res.activeContributors},${res.month}`);
-      return res;
-    });
+  for (const owner in config.orgRepoConfig) {
+    for (const repo in config.orgRepoConfig[owner]) {
+      if(configNames.includes(repo)){
+        continue
+      }
+      const res = activeContributorsLastMonth(owner, repo).then((res) => {
+        // write
+        append(`${res.owner},${res.repo},${res.activeContributors},${res.month}`);
+        return res;
+      });
+      arr.push(res);
+    }
+
   }
   return Promise.all(arr);
 }
@@ -43,7 +50,7 @@ function fixBug() {
 // 向报告文件中追加内容
 function append(content) {
   try {
-    fs.appendFileSync("report-month.csv", content + "\n");
+    fs.appendFileSync("../configs/report-month.csv", content + "\n");
   } catch (err) {
     console.error(err);
   }
@@ -52,7 +59,7 @@ function append(content) {
 // 将内容写入报告文件
 function write(content) {
   try {
-    fs.writeFileSync("report-month.csv", content + "\n");
+    fs.writeFileSync("../configs/report-month.csv", content + "\n");
   } catch (err) {
     console.error(err);
   }

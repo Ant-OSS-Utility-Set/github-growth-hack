@@ -5,6 +5,8 @@ const fetch = require("node-fetch");
 const { countStarsAndForks } = require("../metrics/star_fork");
 const { countNewContributors } = require("../metrics/contributor");
 const moment = require("moment"); // require
+const { configNames,getConfig } = require("../const.js");
+
 const {
   listOpenIssues,
   filterOutDangerousIssues,
@@ -14,55 +16,93 @@ const dangerousIssueDAO = require("../dao/dangerous_issue");
 let octokit = null;
 
 // 生成分数报告
-function generateScoreReport(token, repos, mergeRepo, since, to) {
-  // 初始化octokit
-  octokit = new Octokit({
-    auth: token,
-  });
-  // 开始计算分数
-  start(token, repos, mergeRepo, since, to);
-}
+ async function generateScoreReport(config, since, to) {
+     const token = config.generalConfig.graphToken;
+     // 初始化octokit
+     octokit = new Octokit({
+         auth: token,
+     });
+     // 开始计算分数
+     // 打印出从since到now的时间段
+     console.log(`From ${since} to Now:`);
+     // 启动weeklyScoreDAO
+     weeklyScoreDAO.start();
+     // 启动dangerousIssueDAO
+     dangerousIssueDAO.start();
+     const mergeRepoConfig = config.generalConfig['mergeRepo'];
+     let repo2project = new Map();
+     let resultPromiseArr = [];
 
-// async函数start，用于收集数据，参数分别为token，repos，mergeRepo，since，to
-async function start(token, repos, mergeRepo, since, to) {
-  // 打印出从since到now的时间段
-  console.log(`From ${since} to Now:`);
-  // 启动weeklyScoreDAO
-  weeklyScoreDAO.start();
-  // 启动dangerousIssueDAO
-  dangerousIssueDAO.start();
+     let resultArr = [];
+     let noIssue = true;
 
-  // 循环repos
-  const arr = await processRepos(token,repos,since);
-  // 创建一个Map，用于存储repo2project
-  let repo2project = new Map();
-  // 遍历arr数组
-  arr.forEach((project) => {
-    // 获取project的owner和repo，拼接成key
-    let key = project.owner + "/" + project.repo;
-    // 如果mergeRepo[key]为空，则将project放入repo2project中
-    if (mergeRepo[key] == null) {
-      repo2project.set(key, project);
-    }
-  });
+     for (const owner in config.orgRepoConfig) {
 
-  //合并仓库
-  await mergeRepoToOtherRepo(arr,mergeRepo,repo2project);
-  //插入数据库
-  insertDbAndDingTalk(repo2project,since,to);
-  // 提交weeklyScoreDAO
-  weeklyScoreDAO.commit();
-  // 提交dangerousIssueDAO
-  dangerousIssueDAO.commit();
-}
+
+         for (const repo in config.orgRepoConfig[owner]) {
+             if (configNames.includes(repo)) {
+                 continue
+             }
+             const nickName = getNickName(repo, config.orgRepoConfig[owner][repo]);
+             const promiseIssue =  collectIssueData(owner, repo, since);
+             const promiseStarFork =  countStarsAndForks(token, owner, repo, since);
+             const promiseContributor = await countNewContributors(token, owner, repo, since);
+             const promiseOpenIssues =  listOpenIssues(token, owner, repo);
+             const resultPromise = Promise.all([promiseIssue, promiseStarFork, promiseContributor, promiseOpenIssues])
+                 .then(function (results) {
+                     const result = results[0];
+                     result.new_stars = results[1].star;
+                     result.new_forks = results[1].fork;
+                     result.new_contributors = results[2].new_contributors;
+                     result.openIssues = results[3];
+                     result.nickName = nickName;
+                     result.owner = owner;
+                     result.repo = repo;
+                     // 获取project的owner和repo，拼接成key
+                     let key = result.owner + "/" + result.repo;
+                     // 如果mergeRepo[key]为空，则将project放入repo2project中
+                     if (mergeRepoConfig[key] == null) {
+                         repo2project.set(key, result);
+                     }
+                     // 过滤出有危险问题的列表
+                     let dangerousIssues = filterOutDangerousIssues(result.openIssues, to, result.owner, result.repo);
+                     const dangerIssueFilterd = dangerousIssues.filter(res => res.duration < config.generalConfig.dangerousIssuesConfig.mustReplyInXDays);
+                     if (dangerIssueFilterd.length === 0) {
+                         dangerousIssueDAO.insert(null, null, null, null, owner)
+                     } else {
+                         dangerIssueFilterd.forEach((result) => {
+                             dangerousIssueDAO.insert(result.duration, result.project, result.title, result.url, result.keyword);
+                         });
+                     }
+                     resultArr.push(result);
+                 });
+
+             resultPromiseArr.push(resultPromise);
+         }
+         //repo循环结束
+
+     }
+     //owner循环结束
+     Promise.all(resultPromiseArr).then(async result => {
+         await mergeRepoToOtherRepo(resultArr, mergeRepoConfig, repo2project);
+         //插入数据库;发送钉钉
+         insertDb(repo2project, since, to, config);
+         // 提交weeklyScoreDAO
+         weeklyScoreDAO.commit();
+         dangerousIssueDAO.commit();
+     })
+
+
+ }
+
 
 /**
  * 合并仓库
  * @param arr
+ * @param mergeRepo
  * @param repo2project
- * @returns {Promise<void>}
  */
-async function mergeRepoToOtherRepo(arr, mergeRepo,repo2project) {
+ function mergeRepoToOtherRepo(arr, mergeRepo,repo2project) {
   for (let i = 0; i < arr.length; i++) {
     let project = arr[i];
     let key = project.owner + "/" + project.repo;
@@ -70,10 +110,10 @@ async function mergeRepoToOtherRepo(arr, mergeRepo,repo2project) {
       continue;
     }
     console.log(key + " should be merged");
-    await moveIssuesToOtherRepo(project.closeIssue, mergeRepo[key], repo2project, (project) => project.closeIssue);
-    await moveIssuesToOtherRepo(project.closePr, mergeRepo[key], repo2project, (project) => project.closePr);
-    await moveIssuesToOtherRepo(project.newPr, mergeRepo[key], repo2project, (project) => project.newPr);
-    await moveIssuesToOtherRepo(project.newIssue, mergeRepo[key], repo2project, (project) => project.newIssue);
+     moveIssuesToOtherRepo(project.closeIssue, mergeRepo[key], repo2project, (project) => project.closeIssue);
+     moveIssuesToOtherRepo(project.closePr, mergeRepo[key], repo2project, (project) => project.closePr);
+     moveIssuesToOtherRepo(project.newPr, mergeRepo[key], repo2project, (project) => project.newPr);
+     moveIssuesToOtherRepo(project.newIssue, mergeRepo[key], repo2project, (project) => project.newIssue);
   }
 }
 
@@ -82,13 +122,14 @@ async function mergeRepoToOtherRepo(arr, mergeRepo,repo2project) {
  * @param repo2project
  * @param since
  * @param to
+ * @param config
  */
-function insertDbAndDingTalk(repo2project,since,to){
+function insertDb(repo2project,since,to,config){
   let arr = [];
   // 遍历repo2project
   let i = 0;
   // 调用calculateScore_v2_sub函数，计算score，将计算结果放入arr数组中
-  repo2project.forEach((v, k) => (arr[i++] = calculateScore_v2_subAndInsertDingtTask(v, to)));
+  repo2project.forEach((v, k) => (arr[i++] = calculateScore_v2_sub(config,v, to)));
   // 对arr数组进行排序，按照score降序排列
   arr.sort((a, b) => {
     return b.score - a.score;
@@ -149,27 +190,6 @@ function insertDbAndDingTalk(repo2project,since,to){
 async function processRepos(token, repos, since) {
   let arr = [];
   for (let i = 0; i < repos.length; i++) {
-    const owner = repos[i][0];
-    const repo = repos[i][1];
-    const option = repos[i][2];
-    const nickName = getNickName(repo, repos[i][2]);
-    const promiseIssue = collectIssueData(owner, repo, since);
-    const promiseStarFork = countStarsAndForks(token, owner, repo, since);
-    const promiseContributor = countNewContributors(token, owner, repo, since);
-    const promiseOpenIssues = listOpenIssues(token, owner, repo);
-    arr[i] = Promise.all([promiseIssue, promiseStarFork, promiseContributor, promiseOpenIssues])
-        .then(function (results) {
-          const result = results[0];
-          result.new_stars = results[1].star;
-          result.new_forks = results[1].fork;
-          result.new_contributors = results[2].new_contributors;
-          result.openIssues = results[3];
-          result.nickName = nickName;
-          result.owner = owner;
-          result.repo = repo;
-          result.option = option;
-          return result;
-        });
   }
   arr =  Promise.all(arr);
   return arr;
@@ -187,7 +207,7 @@ function getNickName(repo, repoOption) {
 //--------------------------------下面的都是工具函数，不涉及到主要业务逻辑。||||||||||||||||||||||||||||||
 //----------------------------------------------------------------------------||
 // 异步函数，用于将issues移动到其他仓库
-async function moveIssuesToOtherRepo(
+ function moveIssuesToOtherRepo(
   // issuesToCheck：需要检查的issues
   issuesToCheck,
   // mergeFunc：合并函数
@@ -205,7 +225,7 @@ async function moveIssuesToOtherRepo(
         targetKey =  mergeFunc;
       }else if(typeof mergeFunc === 'function'){
         // 调用mergeFunc函数，获取targetKey
-        targetKey = await mergeFunc(issue);
+        targetKey =  mergeFunc(issue);
       }else{
         console.log("mergeFunction 不是标准格式")
         return;
@@ -278,7 +298,7 @@ function calculateScore_v2_add(result) {
 }
 
 // 计算分数函数，用于计算分数
-function calculateScore_v2_subAndInsertDingtTask(result, to) {
+function calculateScore_v2_sub(config,result, to) {
   // 计算分数
   result = calculateScore(result);
 
@@ -288,15 +308,6 @@ function calculateScore_v2_subAndInsertDingtTask(result, to) {
   // 过滤出有危险问题的列表
   let dangerousIssues = filterOutDangerousIssues(result.openIssues, to,result.owner,result.repo);
   dangerousIssues.forEach((issue) => {
-    // 插入到数据库中
-    dangerousIssueDAO.insert(
-        issue.duration,
-        issue.project,
-        issue.title,
-        issue.url,
-        issue.keyword,
-        result.option
-    );
     // 如果是非常危险的问题，分数减去k2
     if (issue.isVeryDangerous) {
       result.score -= k2;
@@ -305,6 +316,7 @@ function calculateScore_v2_subAndInsertDingtTask(result, to) {
       result.score -= k1;
     }
   });
+
   // 返回计算后的分数
   return result;
 }
