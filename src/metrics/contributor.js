@@ -7,6 +7,7 @@ const moment = require("moment"); // require
 // {
 //   new_contributors: 0,
 // }
+//感觉是阿里内部的一个api网关
 async function countNewContributors(token, owner, repo, since) {
   // 1. generate url
   // https://contributor-overtime-api.apiseven.com/contributors?repo=mosn/layotto
