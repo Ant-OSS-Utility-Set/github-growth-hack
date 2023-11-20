@@ -1,5 +1,6 @@
 const fs = require("fs");
 const { getConn, query } = require("./mysql_conn");
+const {utils} = require("../utils/time_utils");
 
 const weeklyScoreDAO = {
   // 启动DAO
@@ -8,6 +9,9 @@ const weeklyScoreDAO = {
     fsDAOImpl.start();
     // 启动mysqlDAOImpl
     mysqlDAOImpl.start();
+  },
+  insertAlarm:function (alarm){
+    mysqlDAOImpl.insertAlarm(alarm)
   },
   // 插入数据
   insert: function (
@@ -133,7 +137,7 @@ const mysqlDAOImpl = {
   list: function (owner, repo, weeks) {
     // 查询指定项目，按照id降序排列，取4条数据
     return query(
-      `SELECT * FROM \`github_repo_weekly\` where project='${repo}' order by id desc LIMIT 4`
+      `SELECT * FROM \`github_repo_weekly\` where project='${repo}' and owner = '${owner}' order by id desc LIMIT ${weeks}`
     );
     // .then(function (data) {
     //     if(data.rows[0]!=undefined)

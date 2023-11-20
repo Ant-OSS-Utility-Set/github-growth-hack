@@ -34,8 +34,6 @@ let octokit = null;
      let resultPromiseArr = [];
 
      let resultArr = [];
-     let noIssue = true;
-
      for (const owner in config.orgRepoConfig) {
 
 
@@ -74,6 +72,17 @@ let octokit = null;
                              dangerousIssueDAO.insert(result.duration, result.project, result.title, result.url, result.keyword);
                          });
                      }
+                     // dangerousIssueDAO.getMysqlDao().sendAlarmMysql({
+                     //   scanFrom:since,
+                     //   scanTo:to,
+                     //   owner:owner,
+                     //   repo:repo,
+                     //   issueNum:dangerIssueFilterd.length,
+                     //   alarmContent:"",
+                     //   alarmStatus:dangerIssueFilterd.length===0?'success':"fail",
+                     //   alarmType:'issue',
+                     //   alarmChannel:'dingding'
+                     // })
                      resultArr.push(result);
                  });
 
@@ -83,13 +92,13 @@ let octokit = null;
 
      }
      //owner循环结束
-     Promise.all(resultPromiseArr).then(async result => {
+      Promise.all(resultPromiseArr).then(async result => {
          await mergeRepoToOtherRepo(resultArr, mergeRepoConfig, repo2project);
          //插入数据库;发送钉钉
          insertDb(repo2project, since, to, config);
          // 提交weeklyScoreDAO
-         weeklyScoreDAO.commit();
-         dangerousIssueDAO.commit();
+          weeklyScoreDAO.commit();
+          dangerousIssueDAO.commit();
      })
 
 
@@ -334,7 +343,6 @@ function someMemberHasReplied(issue) {
   if (issue.comments == 0) {
     return false;
   }
-  // TODO
   // let url = issue.timeline_url.replace("https: //", "https://");
   // https://api.github.com/repos/mosn/layotto/issues/214/timeline
   return true;

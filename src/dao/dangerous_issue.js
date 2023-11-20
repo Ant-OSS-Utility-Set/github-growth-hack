@@ -3,19 +3,58 @@ const moment = require("moment");
 const fetch = require("node-fetch");
 const config = require("../../configs/config.json");
 const {getConfig} = require("../const");
+const { getConn, query } = require("./mysql_conn");
+const {utils} = require("../utils/time_utils");
+
+const mysqlDao = {
+
+  sendAlarmMysql:function sendAlarmMysql(alarm) {
+    // 获取连接
+    let conn = getConn();
+    // 如果连接为空，则返回
+    if (conn == null) {
+      // console.log("mysql connection is null");
+      return;
+    }
+    // 构建sql语句
+    let sql =
+        `INSERT INTO \`github_alarm_info\` (\`scanFrom\`, \`scanTo\`, \`alarmType\`, \`alarmChannel\`, \`alarmStatus\`, \`owner\`, \`project\`, \`issueNum\`, \`alarmContent\`, \`createTime\`)` +
+        ` VALUES ("${alarm.scanFrom}","${alarm.scanTo}","${alarm.alarmType}"` +
+        `,${alarm.alarmChannel},${alarm.alarmStatus}` +
+        `,"${alarm.owner}","${alarm.repo}"` +
+        `,${alarm.issueNum},${alarm.alarmContent},${ utils.nowWithReadableFormat()})`;
+    // 执行sql语句
+    conn.query(sql, function (err, result) {
+      // 如果出错，则抛出错误
+      if (err) {
+        console.log(err);
+        throw err;
+      }
+    });
+  },
+  commitMysql:function () {
+    // 获取连接
+    let conn = getConn();
+    // 如果连接为空，则返回
+    if (conn == null) {
+      conn.end()
+    }
+  }
+}
 
 const dingTalkDao = {
-  issues: new Map(),
+  issuesForDingTalk: new Map(),
+
   livenessCheck:  new Map(),
   start: function () { },
   // put the issue into the memory list
   insert: function (duration, project, title, url, owner) {
       // 将duration、project、title、url、keyword参数添加到this.issues数组中
-    if(this.issues.get(owner)==null){
-      this.issues.set(owner,[])
+    if(this.issuesForDingTalk.get(owner)==null){
+      this.issuesForDingTalk.set(owner,[])
     }
     if(project!=null){
-      this.issues.get(owner).push({
+      this.issuesForDingTalk.get(owner).push({
         duration: duration,
         project: project,
         title: title,
@@ -29,37 +68,51 @@ const dingTalkDao = {
       this.livenessCheck.set(owner,[])
     }
     if(project!=null){
-      this.issues.get(owner).push({
+      this.livenessCheck.get(owner).push({
         project: project,
       })
     }
 
   },
-  // write to db
-  commit: function () {
+  sendLiveness:async function(livenessCheckElement,owner,ownerDingTalkGroupConfig){
+    if (livenessCheckElement > 0) {
+      let livenessContent = this.concatLivenessContent(owner, livenessCheckElement, ownerDingTalkGroupConfig);
+      await this.send(livenessContent, null, false, true, "liveness", ownerDingTalkGroupConfig);
+    } else {
+      await this.sendSuccessLivecheck(owner, ownerDingTalkGroupConfig)
+    }
+  },
+  // write to dingtalk
+  commit: async function () {
+
+
+    for (const [owner, value] of this.issuesForDingTalk) {
+      const ownerDingTalkGroupConfig = getConfig(null, config.orgRepoConfig[owner]['dingTalkGroupConfig'], config.generalConfig['dingTalkGroupConfig']);
+      if (value.length > 0) {
+        let issueContent = this.concatIssueContent(owner, value, ownerDingTalkGroupConfig);
+        await this.send(issueContent, null, false, true, "issue", ownerDingTalkGroupConfig);
+      } else {
+        await this.sendNoIssue(owner, ownerDingTalkGroupConfig)
+      }
+      //顺序每个社区发送
+      let livenessCheckElement = this.livenessCheck.get(owner);
+      if(livenessCheckElement == null){
+        continue;
+      }
+      this.livenessCheck.delete(owner)
+      await this.sendLiveness(livenessCheckElement,owner,ownerDingTalkGroupConfig);
+    }
+    //在循环剩下的。主要是为了达到同一个社区顺序发送的消息
     for (const [owner, value] of this.livenessCheck) {
       const ownerDingTalkGroupConfig = getConfig(null, config.orgRepoConfig[owner]['dingTalkGroupConfig'], config.generalConfig['dingTalkGroupConfig']);
-      if(value > 0){
-        let livenessContent = this.concatLivenessContent(owner,value,ownerDingTalkGroupConfig);
-        this.send(livenessContent, null, false, true, "liveness",ownerDingTalkGroupConfig);
-      }else{
-        this.sendSuccessLivecheck(owner,ownerDingTalkGroupConfig)
-      }
+      await this.sendLiveness(value,owner,ownerDingTalkGroupConfig);
     }
 
-    for (const [owner, value] of this.issues) {
-      const ownerDingTalkGroupConfig = getConfig(null, config.orgRepoConfig[owner]['dingTalkGroupConfig'], config.generalConfig['dingTalkGroupConfig']);
-      let uid = ownerDingTalkGroupConfig['owners'].values();
-      if(value.length > 0){
-        let issueContent = this.concatIssueContent(owner,value,ownerDingTalkGroupConfig);
-        this.send(issueContent, uid, false, true, "issue",ownerDingTalkGroupConfig);
-      }else{
-        this.sendNoIssue(owner,ownerDingTalkGroupConfig)
-      }
-    }
+
+
     //提交后重置
-    this.issues = new Map
-    this.livenessCheck= new Map
+    this.issuesForDingTalk = new Map
+    this.livenessCheck = new Map
   },
 
   concatLivenessContent : function concatLivenessContent(owner,livenessCheck,dingTalkGroupConfig) {
@@ -148,14 +201,14 @@ const dingTalkDao = {
     // 返回false
     return false;
   },
-  sendSuccessLivecheck: function (owner,dingTalkGroupConfig) {
+  sendSuccessLivecheck: async function (owner, dingTalkGroupConfig) {
     let content =
         `${owner}社区活跃度检查 (liveness check)结果：所有项目通过了活跃度检查!\n` +
         `\n` +
         `注：liveness check会检查每个项目的健康情况，如果满足下列条件会被归类为“腐烂级”项目：\n` +
         `- 存在大于30天未回复的 issue \n` +
         `- 连续4周活跃度小于20\n`;
-    this.send(content, null, false,  false, "liveness", dingTalkGroupConfig);
+    await this.send(content, null, false, false, "liveness", dingTalkGroupConfig);
   },
   sendNoIssue: async function (owner, dingTalkGroupConfig) {
     let awards = [
@@ -180,10 +233,8 @@ const dingTalkDao = {
     let idx = Math.floor(Math.random() * awards.length);
     let content = awards[idx].content;
     let img = awards[idx].img;
-    let promise = this.send(content, null, false, false, "issue", dingTalkGroupConfig);
-    promise.then(()=>{
-      this.sendImage(img, null, false, false, "issue", owner, dingTalkGroupConfig);
-    })
+    await this.send(content, null, false, false, "issue", dingTalkGroupConfig);
+    await this.sendImage(img, null, false, false, "issue", owner, dingTalkGroupConfig);
   },
   /**
    * 这里的owner等于owner好像
@@ -194,7 +245,7 @@ const dingTalkDao = {
    * @param topicType
    * @param dingTalkGroupConfig
    */
-  send: function (content, atUid, isAtAll, isNegative, topicType,dingTalkGroupConfig) {
+  send: async function (content, atUid, isAtAll, isNegative, topicType,dingTalkGroupConfig) {
     const topicTypeLiveness = "liveness";
     const topicTypeIssue = "issue";
     const groups = dingTalkGroupConfig["groups"]
@@ -302,7 +353,7 @@ const dingTalkDao = {
     // 否则返回false
     return false;
   },
-  sendImage: function (imageUrl, atUid, isAtAll, isNegative, topicType,owner,option) {
+  sendImage: async function (imageUrl, atUid, isAtAll, isNegative, topicType,owner,option) {
     const groups = option["groups"]
     for (let group of groups) {
       // 1.validate
@@ -328,7 +379,7 @@ const dingTalkDao = {
         nickName = group['nickName'];
       }
       // 2. send request
-      fetch(group.url, {
+      return fetch(group.url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -443,4 +494,7 @@ module.exports = {
   getDingTalkDao() {
     return dingTalkDao;
   },
+  getMysqlDao(){
+    return mysqlDao;
+  }
 };

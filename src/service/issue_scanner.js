@@ -61,7 +61,7 @@ const issueScanner = {
         }
         // 扫描仓库中的 good first issue
         const res = listGoodFirstIssues(config.generalConfig.graphToken, owner, repo, since)
-            .then(function (issues) {
+            .then(async function (issues) {
               // The data structure looks like:
               // {
               //   easy: [],
@@ -114,6 +114,18 @@ const issueScanner = {
                 return;
               }
 
+               //埋点数据，先注释 todo
+              //  dangerousIssueDAO.getMysqlDao().sendAlarmMysql({
+              //   scanFrom: since,
+              //   scanTo: to,
+              //   owner: owner,
+              //   repo: repo,
+              //   issueNum: 0,
+              //   alarmContent: text,
+              //   alarmStatus: 'success',
+              //   alarmType: 'good-first-issue',
+              //   alarmChannel: 'dingding'
+              // });
               // 发送消息,atUid就是@某个人
               goodFirstIssueConfig["channels"].forEach((ch) => {
                 if (ch["type"] === "dingtalk") {
@@ -130,6 +142,7 @@ const issueScanner = {
     }
     Promise.all(arr).then((results) => {
       console.log("All scanned!");
+     dangerousIssueDAO.getMysqlDao().commitMysql();
     });
   },
 
@@ -152,16 +165,29 @@ const issueScanner = {
           if(livenessCheckConfig.enable){
             let noDangerous = !resultsArray.some(result=>result.isVeryDangerous);
             livenessCheck(owner,repo,resultsArray).then(isSuccess=>{
-              if(noDangerous || isSuccess){
+              let status = noDangerous || isSuccess
+              if(status){
                 //检查通过
                 dangerousIssueDAO.insertLivenessCheck(owner,null);
               }else{
                 //检查失败
                 dangerousIssueDAO.insertLivenessCheck(owner,repo);
               }
+              //触发报警数据埋点 todo
+              // dangerousIssueDAO.getMysqlDao().sendAlarmMysql({
+              //   scanFrom:since,
+              //   scanTo:to,
+              //   owner:owner,
+              //   repo:repo,
+              //   issueNum:null,
+              //   alarmContent:"",
+              //   alarmStatus:status?'success':"fail",
+              //   alarmType:'liveness',
+              //   alarmChannel:'dingding'
+              // })
             })
           }
-          resultsArray = resultsArray.filter(res => res.duration < config.generalConfig.dangerousIssuesConfig.mustReplyInXDays)
+          resultsArray = resultsArray.filter(res => res.duration!=null && res.duration < config.generalConfig.dangerousIssuesConfig.mustReplyInXDays)
           if(resultsArray.length>0){
              resultsArray.forEach((result) => {
               dangerousIssueDAO.insert(  result.duration, result.project, result.title,   result.url,  result.keyword );
@@ -169,6 +195,18 @@ const issueScanner = {
           }else{
             dangerousIssueDAO.insert(null,null,null,null,owner )
           }
+          //触发报警数据埋点 todo
+          // dangerousIssueDAO.getMysqlDao().sendAlarmMysql({
+          //   scanFrom:since,
+          //   scanTo:to,
+          //   owner:owner,
+          //   repo:repo,
+          //   issueNum:resultsArray.length,
+          //   alarmContent:"",
+          //   alarmStatus:resultsArray.length===0?'success':"fail",
+          //   alarmType:'issue',
+          //   alarmChannel:'dingding'
+          // })
        });
         listDangerPromise.push(restProme)
       }
@@ -179,6 +217,7 @@ const issueScanner = {
     listDangerPromise =  Promise.all(listDangerPromise);
     listDangerPromise.then(res =>{
       dangerousIssueDAO.commit();
+      dangerousIssueDAO.getMysqlDao().commitMysql();
     });
   },
 };
