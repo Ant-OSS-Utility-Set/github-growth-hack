@@ -46,7 +46,7 @@ async function livenessCheck(owner, repo, resultsArray) {
 }
 
 const issueScanner = {
-  scanGoodFirstIssues: function (config, since, to) {
+  scanGoodFirstIssues: async function (config, since, to) {
     // 过滤出 good first issue 的仓库
     let arr = [];
 

@@ -36,7 +36,7 @@ const mysqlDao = {
     // 获取连接
     let conn = getConn();
     // 如果连接为空，则返回
-    if (conn == null) {
+    if (conn != null) {
       conn.end()
     }
   }
