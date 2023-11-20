@@ -13,7 +13,7 @@ const mysqlDao = {
     let conn = getConn();
     // 如果连接为空，则返回
     if (conn == null) {
-      // console.log("mysql connection is null");
+      console.log("mysql connection is null");
       return;
     }
     // 构建sql语句
