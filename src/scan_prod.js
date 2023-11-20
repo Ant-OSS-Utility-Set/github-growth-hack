@@ -10,7 +10,7 @@ let since = utils.sevenDaysBefore();
 let to = utils.today();
 
     //需要改的配置
-const env = "prod";
+const env = "dev";
 
 devForTest(env,config);
 dispatch(config,since, to);
