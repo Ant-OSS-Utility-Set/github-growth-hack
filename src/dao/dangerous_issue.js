@@ -20,11 +20,12 @@ const mysqlDao = {
     let sql =
         `INSERT INTO \`github_alarm_info\` (\`scanFrom\`, \`scanTo\`, \`alarmType\`, \`alarmChannel\`, \`alarmStatus\`, \`owner\`, \`project\`, \`issueNum\`, \`alarmContent\`, \`createTime\`)` +
         ` VALUES ("${alarm.scanFrom}","${alarm.scanTo}","${alarm.alarmType}"` +
-        `,${alarm.alarmChannel},${alarm.alarmStatus}` +
+        `,'${alarm.alarmChannel}','${alarm.alarmStatus}'` +
         `,"${alarm.owner}","${alarm.repo}"` +
-        `,${alarm.issueNum},${alarm.alarmContent},${ utils.nowWithReadableFormat()})`;
+        `,${alarm.issueNum},'${alarm.alarmContent}','${utils.today()}')`;
     // 执行sql语句
     conn.query(sql, function (err, result) {
+      console.log("插入埋点数据：")
       // 如果出错，则抛出错误
       if (err) {
         console.log(err);

@@ -84,7 +84,7 @@ const issueScanner = {
               //   unknown: []
               // }
 
-              let text = `${repo} 新增了几个 good first issue, 欢迎感兴趣的朋友认领! \n\r`;
+              let text = `${owner}社区${repo}项目新增了几个 good first issue, 欢迎感兴趣的朋友认领! \n\r`;
 
               let hasKnownIssues = false;
               if (issues.easy.length > 0) {
@@ -113,24 +113,22 @@ const issueScanner = {
                 console.log("没有需要认领的issue")
                 return;
               }
-
-               //埋点数据，先注释 todo
-              //  dangerousIssueDAO.getMysqlDao().sendAlarmMysql({
-              //   scanFrom: since,
-              //   scanTo: to,
-              //   owner: owner,
-              //   repo: repo,
-              //   issueNum: 0,
-              //   alarmContent: text,
-              //   alarmStatus: 'success',
-              //   alarmType: 'good-first-issue',
-              //   alarmChannel: 'dingding'
-              // });
+               //埋点数据
+                dangerousIssueDAO.getMysqlDao().sendAlarmMysql({
+                scanFrom: since,
+                scanTo: to,
+                owner: owner,
+                repo: repo,
+                issueNum: 1,
+                alarmContent: text,
+                alarmStatus: 'success',
+                alarmType: 'good-first-issue',
+                alarmChannel: 'dingding'
+              });
               // 发送消息,atUid就是@某个人
               goodFirstIssueConfig["channels"].forEach((ch) => {
                 if (ch["type"] === "dingtalk") {
                   sender.sendMarkdown(ch.urls, text, ch.title, ch.atUid, ch.atAll);
-
                 } else {
                   console.error(`channel ${ch["type"]} not supported!`);
                 }
@@ -160,54 +158,54 @@ const issueScanner = {
         }
         const repoConfig = config.orgRepoConfig[owner][repo]
         const livenessCheckConfig = getConfig(repoConfig['liveness-check'], config.orgRepoConfig[owner]['liveness-check'], config.generalConfig['liveness-check']);
-        const restProme = listDangerousOpenIssues(config.generalConfig.graphToken, owner, repo, to).then(resultsArray =>{
+        const restProme = listDangerousOpenIssues(config.generalConfig.graphToken, owner, repo, to).then(async resultsArray => {
 
-          if(livenessCheckConfig.enable){
-            let noDangerous = !resultsArray.some(result=>result.isVeryDangerous);
-            livenessCheck(owner,repo,resultsArray).then(isSuccess=>{
+          if (livenessCheckConfig.enable) {
+            let noDangerous = !resultsArray.some(result => result.isVeryDangerous);
+            await livenessCheck(owner, repo, resultsArray).then(isSuccess => {
               let status = noDangerous || isSuccess
-              if(status){
+              if (status) {
                 //检查通过
-                dangerousIssueDAO.insertLivenessCheck(owner,null);
-              }else{
+                dangerousIssueDAO.insertLivenessCheck(owner, null);
+              } else {
                 //检查失败
-                dangerousIssueDAO.insertLivenessCheck(owner,repo);
+                dangerousIssueDAO.insertLivenessCheck(owner, repo);
               }
-              //触发报警数据埋点 todo
-              // dangerousIssueDAO.getMysqlDao().sendAlarmMysql({
-              //   scanFrom:since,
-              //   scanTo:to,
-              //   owner:owner,
-              //   repo:repo,
-              //   issueNum:null,
-              //   alarmContent:"",
-              //   alarmStatus:status?'success':"fail",
-              //   alarmType:'liveness',
-              //   alarmChannel:'dingding'
-              // })
+              //触发报警数据埋点
+               dangerousIssueDAO.getMysqlDao().sendAlarmMysql({
+                scanFrom: since,
+                scanTo: to,
+                owner: owner,
+                repo: repo,
+                issueNum: 0,
+                alarmContent: "",
+                alarmStatus: status ? 'success' : "fail",
+                alarmType: 'liveness',
+                alarmChannel: 'dingding'
+              })
             })
           }
-          resultsArray = resultsArray.filter(res => res.duration!=null && res.duration < config.generalConfig.dangerousIssuesConfig.mustReplyInXDays)
-          if(resultsArray.length>0){
-             resultsArray.forEach((result) => {
-              dangerousIssueDAO.insert(  result.duration, result.project, result.title,   result.url,  result.keyword );
+          resultsArray = resultsArray.filter(res => res.duration != null && res.duration < config.generalConfig.dangerousIssuesConfig.mustReplyInXDays)
+          if (resultsArray.length > 0) {
+            resultsArray.forEach((result) => {
+              dangerousIssueDAO.insert(result.duration, result.project, result.title, result.url, result.keyword);
             });
-          }else{
-            dangerousIssueDAO.insert(null,null,null,null,owner )
+          } else {
+            dangerousIssueDAO.insert(null, null, null, null, owner)
           }
-          //触发报警数据埋点 todo
-          // dangerousIssueDAO.getMysqlDao().sendAlarmMysql({
-          //   scanFrom:since,
-          //   scanTo:to,
-          //   owner:owner,
-          //   repo:repo,
-          //   issueNum:resultsArray.length,
-          //   alarmContent:"",
-          //   alarmStatus:resultsArray.length===0?'success':"fail",
-          //   alarmType:'issue',
-          //   alarmChannel:'dingding'
-          // })
-       });
+          //触发报警数据埋点
+          dangerousIssueDAO.getMysqlDao().sendAlarmMysql({
+            scanFrom: since,
+            scanTo: to,
+            owner: owner,
+            repo: repo,
+            issueNum: resultsArray.length,
+            alarmContent: "",
+            alarmStatus: resultsArray.length === 0 ? 'success' : "fail",
+            alarmType: 'issue',
+            alarmChannel: 'dingding'
+          })
+        });
         listDangerPromise.push(restProme)
       }
       //按照owner进行发布
