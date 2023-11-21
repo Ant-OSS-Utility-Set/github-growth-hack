@@ -409,10 +409,10 @@ const dingTalkDao = {
 };
 
 const fsDAOImpl = {
-  filePath: "../configs/dangerous_issues.csv",
+  filePath: "./dangerous_issues.csv",
   header: "duration,repo,title,url",
   // chinese report here
-  filePath_zh: "../configs/dangerous_issues_zh.csv",
+  filePath_zh: "./dangerous_issues_zh.csv",
   header_zh: "帖子发了多久（天）,repo,title,url",
   // The data structure in this array is:
   // {

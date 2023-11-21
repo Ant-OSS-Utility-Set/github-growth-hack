@@ -50,7 +50,7 @@ function fixBug() {
 // 向报告文件中追加内容
 function append(content) {
   try {
-    fs.appendFileSync("../configs/report-month.csv", content + "\n");
+    fs.appendFileSync("./report-month.csv", content + "\n");
   } catch (err) {
     console.error(err);
   }
@@ -59,7 +59,7 @@ function append(content) {
 // 将内容写入报告文件
 function write(content) {
   try {
-    fs.writeFileSync("../configs/report-month.csv", content + "\n");
+    fs.writeFileSync("./report-month.csv", content + "\n");
   } catch (err) {
     console.error(err);
   }
