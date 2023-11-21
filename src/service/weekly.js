@@ -28,7 +28,7 @@ let octokit = null;
      // 启动weeklyScoreDAO
      weeklyScoreDAO.start();
      // 启动dangerousIssueDAO
-     dangerousIssueDAO.start();
+     // dangerousIssueDAO.start();
      const mergeRepoConfig = config.generalConfig['mergeRepo'];
      let repo2project = new Map();
      let resultPromiseArr = [];
@@ -62,16 +62,17 @@ let octokit = null;
                      if (mergeRepoConfig[key] == null) {
                          repo2project.set(key, result);
                      }
-                     // 过滤出有危险问题的列表
-                     let dangerousIssues = filterOutDangerousIssues(result.openIssues, to, result.owner, result.repo);
-                     const dangerIssueFilterd = dangerousIssues.filter(res => res.duration < config.generalConfig.dangerousIssuesConfig.mustReplyInXDays);
-                     if (dangerIssueFilterd.length === 0) {
-                         dangerousIssueDAO.insert(null, null, null, null, owner)
-                     } else {
-                         dangerIssueFilterd.forEach((result) => {
-                             dangerousIssueDAO.insert(result.duration, result.project, result.title, result.url, result.keyword);
-                         });
-                     }
+                     // 过滤出有危险问题的列表 ，修改相关bug，这里不在重复发送钉钉
+                     // let dangerousIssues = filterOutDangerousIssues(result.openIssues, to, result.owner, result.repo);
+                     // const dangerIssueFilterd = dangerousIssues.filter(res => res.duration < config.generalConfig.dangerousIssuesConfig.mustReplyInXDays);
+                     // if (dangerIssueFilterd.length === 0) {
+                     //     dangerousIssueDAO.insert(null, null, null, null, owner)
+                     // } else {
+                     //     dangerIssueFilterd.forEach((result) => {
+                     //         dangerousIssueDAO.insert(result.duration, result.project, result.title, result.url, result.keyword);
+                     //     });
+                     // }
+                     // 埋点数据 ToDo
                      // dangerousIssueDAO.getMysqlDao().sendAlarmMysql({
                      //   scanFrom:since,
                      //   scanTo:to,
@@ -98,7 +99,7 @@ let octokit = null;
          insertDb(repo2project, since, to, config);
          // 提交weeklyScoreDAO
           weeklyScoreDAO.commit();
-          dangerousIssueDAO.commit();
+          // dangerousIssueDAO.commit();
      })
 
 
