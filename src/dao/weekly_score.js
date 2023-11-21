@@ -183,7 +183,7 @@ const fsDAOImpl = {
     content = content.replace(/\t/g, ",");
 
     try {
-      fs.writeFileSync("../configs/report.csv", content + "\n");
+      fs.writeFileSync("./report.csv", content + "\n");
     } catch (err) {
       console.error(err);
     }
@@ -195,7 +195,7 @@ const fsDAOImpl = {
     // need to add BOM header,see
     // https://www.zhihu.com/question/21869078/answer/350728339
     try {
-      fs.writeFileSync("../configs/report-zh.csv", "\uFEFF" + content + "\n", "utf8");
+      fs.writeFileSync("./report-zh.csv", "\uFEFF" + content + "\n", "utf8");
     } catch (err) {
       console.error(err);
     }
@@ -230,14 +230,14 @@ const fsDAOImpl = {
   },
   // 提交
   commit: function () {
-    fs.appendFile("../configs/report.csv", this._content, function (err) {
+    fs.appendFile("./report.csv", this._content, function (err) {
       if (err) {
         console.log(err);
       } else {
         // console.log("ok.");
       }
     });
-    fs.appendFileSync("../configs/report-zh.csv", this._content, function (err) {
+    fs.appendFileSync("./report-zh.csv", this._content, function (err) {
       if (err) {
         console.log(err);
       } else {
