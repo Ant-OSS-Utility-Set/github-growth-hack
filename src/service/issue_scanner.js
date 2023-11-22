@@ -1,7 +1,6 @@
 const {
   listDangerousOpenIssues,
-  listGoodFirstIssues, shouldReplyInXDays, mustReplyInXDays,
-} = require("../metrics/issues");
+  listGoodFirstIssues} = require("../metrics/issues");
 const dangerousIssueDAO = require("../dao/dangerous_issue");
 const { weeklyScoreDAO } = require("../dao/weekly_score");
 const sender = require("../dao/dingtalk");
