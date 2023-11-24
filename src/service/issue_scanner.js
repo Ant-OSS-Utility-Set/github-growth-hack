@@ -176,19 +176,28 @@ const issueScanner = {
             let noDangerous = !resultsArray.some(result => result.isVeryDangerous);
             await livenessCheck(owner, repo, resultsArray).then(isSuccess => {
               let status = noDangerous || isSuccess
+              let mergeRepo = config.generalConfig.mergeRepo[`${owner}/${repo}`];
+              let ownerMerge=owner;
+              let repoMerge=repo;
+              if(mergeRepo != null){
+                let split = mergeRepo.split('/');
+                ownerMerge = split[0]
+                repoMerge = split[1]
+              }
+
               if (status) {
                 //检查通过
-                dangerousIssueDAO.insertLivenessCheck(owner, null);
+                dangerousIssueDAO.insertLivenessCheck(ownerMerge, null);
               } else {
                 //检查失败
-                dangerousIssueDAO.insertLivenessCheck(owner, repo);
+                dangerousIssueDAO.insertLivenessCheck(ownerMerge, repoMerge);
               }
               //触发报警数据埋点
               dangerousIssueDAO.getMysqlDao().sendAlarmMysql({
                 scanFrom: since,
                 scanTo: to,
-                owner: owner,
-                repo: repo,
+                owner: ownerMerge,
+                repo: repoMerge,
                 issueNum: 0,
                 alarmContent: "",
                 alarmStatus: status ? 'success' : "fail",

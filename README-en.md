@@ -59,7 +59,7 @@ git clone https://github.com/seeflood/github-growth-hack.git
 
 1. Create your configuration json file  in `github-growth-hack/configs/config.json`
 2. 
-   [config.json reference](配置文件说明.md)
+   [config.json reference](config文件配置说明.md)
 
 2. Run it
 
