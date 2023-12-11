@@ -1,6 +1,7 @@
 const fetch = require("node-fetch");
 const moment = require("moment"); // require
 const config = require("../../configs/config.json");
+const {getConfig} = require("../const");
 
 // 设置回复在X天内的天数，默认值5天
 let shouldReplyInXDays = config.generalConfig.dangerousIssuesConfig.shouldReplyInXDays;
@@ -244,6 +245,13 @@ async function listDangerousOpenIssues(token, owner, repo, to) {
 
 // 过滤出危险的
 function filterOutDangerousIssues(issues, to,owner,repo) {
+
+  let dangerousIssuesConfig = getConfig( config.orgRepoConfig[owner][repo]['dangerousIssuesConfig'],config.orgRepoConfig[owner]['dangerousIssuesConfig'],config.generalConfig.dangerousIssuesConfig);
+  let shouldReplyInXDays = dangerousIssuesConfig.shouldReplyInXDays;
+// 设置必须回复在X天内的天数。默认值30天
+  let mustReplyInXDays = dangerousIssuesConfig.mustReplyInXDays
+
+
   const result = [];
   // filter out those dangerous issues
   // 遍历所有issues

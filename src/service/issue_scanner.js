@@ -1,7 +1,6 @@
 const {
   listDangerousOpenIssues,
-  listGoodFirstIssues, shouldReplyInXDays, mustReplyInXDays,
-} = require("../metrics/issues");
+  listGoodFirstIssues} = require("../metrics/issues");
 const dangerousIssueDAO = require("../dao/dangerous_issue");
 const { weeklyScoreDAO } = require("../dao/weekly_score");
 const sender = require("../dao/dingtalk");
@@ -46,102 +45,115 @@ async function livenessCheck(owner, repo, resultsArray) {
 }
 
 const issueScanner = {
+  // 扫描仓库中的 good first issue
+  // The data structure looks like:
+  // {
+  //   easy: [],
+  //   medium: [
+  //     {
+  //       project: 'layotto',
+  //       title: 'Develop a new component for sms API; 为"短信 API" 开发新的组件',
+  //       url: 'https://github.com/mosn/layotto/issues/830',
+  //       labels: [Array]
+  //     }
+  //   ],
+  //   hard: [
+  //     {
+  //       project: 'layotto',
+  //       title: 'generate a cli tool for Layotto;  生成 Layotto 命令行工具',
+  //       url: 'https://github.com/mosn/layotto/issues/826',
+  //       labels: [Array]
+  //     }
+  //   ],
+  //   unknown: []
+  // }
+
   scanGoodFirstIssues: async function (config, since, to) {
-    // 过滤出 good first issue 的仓库
-    let arr = [];
+    /**
+     * 组合发送信息
+     * @param issues
+     * @param repo
+     * @returns {string|null}
+     */
+    function concatText(issues, repo) {
+      let text = `${repo}项目新增了几个 good first issue, 欢迎感兴趣的朋友认领! \n\r`;
+      let issueCategories = {
+        easy: { title: "- Easy \n\r", issues: issues.easy },
+        medium: { title: "- Medium \n\r", issues: issues.medium },
+        hard: { title: "- Hard \n\r", issues: issues.hard },
+        unknown: { title: "- 其他 \n\r", issues: issues.unknown }
+      };
+
+      let hasKnownIssues = false;
+      for (let category in issueCategories) {
+        if (issueCategories[category].issues.length > 0) {
+          text += issueCategories[category].title;
+          text = appendGoodFirstIssues(text, issueCategories[category].issues);
+          hasKnownIssues = true;
+        }
+      }
+      if (!hasKnownIssues) {
+        console.log("没有需要认领的issue");
+        return null;
+      }
+      return text;
+    }
 
     for (const owner in config.orgRepoConfig) {
+      let arr = [];
+      let ownerText =null
       for (const repo in config.orgRepoConfig[owner]) {
         if(configNames.includes(repo)){
           continue
         }
-        const goodFirstIssueConfig = getConfig(config.orgRepoConfig[owner][repo]['good-first-issue-notifier'], config.orgRepoConfig[owner]['good-first-issue-notifier'], config.generalConfig['good-first-issue-notifier']);
+        let repoGoodConfig = config.orgRepoConfig[owner][repo]['good-first-issue-notifier'];
+        const goodFirstIssueConfig = getConfig(repoGoodConfig, config.orgRepoConfig[owner]['good-first-issue-notifier'], config.generalConfig['good-first-issue-notifier']);
         if(!goodFirstIssueConfig.enable){
           return;
         }
-        // 扫描仓库中的 good first issue
         const res = listGoodFirstIssues(config.generalConfig.graphToken, owner, repo, since)
             .then(async function (issues) {
-              // The data structure looks like:
-              // {
-              //   easy: [],
-              //   medium: [
-              //     {
-              //       project: 'layotto',
-              //       title: 'Develop a new component for sms API; 为"短信 API" 开发新的组件',
-              //       url: 'https://github.com/mosn/layotto/issues/830',
-              //       labels: [Array]
-              //     }
-              //   ],
-              //   hard: [
-              //     {
-              //       project: 'layotto',
-              //       title: 'generate a cli tool for Layotto;  生成 Layotto 命令行工具',
-              //       url: 'https://github.com/mosn/layotto/issues/826',
-              //       labels: [Array]
-              //     }
-              //   ],
-              //   unknown: []
-              // }
-
-              let text = `${owner}社区${repo}项目新增了几个 good first issue, 欢迎感兴趣的朋友认领! \n\r`;
-
-              let hasKnownIssues = false;
-              if (issues.easy.length > 0) {
-                text += "- Easy \n\r";
-                text = appendGoodFirstIssues(text, issues.easy);
-                hasKnownIssues = true;
-              }
-              if (issues.medium.length > 0) {
-                text += "- Medium \n\r";
-                text = appendGoodFirstIssues(text, issues.medium);
-                hasKnownIssues = true;
-              }
-              if (issues.hard.length > 0) {
-                text += "- Hard \n\r";
-                text = appendGoodFirstIssues(text, issues.hard);
-                hasKnownIssues = true;
-              }
-              if (issues.unknown.length > 0) {
-                if (hasKnownIssues) {
-                  text += "- 其他 \n\r";
-                }
-                text = appendGoodFirstIssues(text, issues.unknown);
-              }
-
-              if (!hasKnownIssues && issues.unknown.length == 0) {
-                console.log("没有需要认领的issue")
+              const repoText = concatText(issues,repo);
+              if(repoText == null){
                 return;
               }
-               //埋点数据
-                dangerousIssueDAO.getMysqlDao().sendAlarmMysql({
-                scanFrom: since,
-                scanTo: to,
-                owner: owner,
-                repo: repo,
-                issueNum: 1,
-                alarmContent: text,
-                alarmStatus: 'success',
-                alarmType: 'good-first-issue',
-                alarmChannel: 'dingding'
-              });
-              // 发送消息,atUid就是@某个人
-              goodFirstIssueConfig["channels"].forEach((ch) => {
-                if (ch["type"] === "dingtalk") {
-                  sender.sendMarkdown(ch.urls, text, ch.title, ch.atUid, ch.atAll);
-                } else {
-                  console.error(`channel ${ch["type"]} not supported!`);
-                }
-              });
+              //单项目发送
+              if(repoGoodConfig!=null){
+                // 发送repo消息,atUid就是@某个人
+                repoGoodConfig["channels"].forEach((ch) => {
+                  if (ch["type"] === "dingtalk") {
+                    sender.sendMarkdown(ch.urls, repoText, ch.title, ch.atUid, ch.atAll);
+                  } else {
+                    console.error(`channel ${ch["type"]} not supported!`);
+                  }
+                });
+              }else{
+                //社区组合发送
+                ownerText += repoText;
+              }
+              //埋点数据
+              dangerousIssueDAO.getMysqlDao().sendAlarmMysql({scanFrom: since, scanTo: to, owner: owner, repo: repo, issueNum: 1, alarmContent: text, alarmStatus: 'success', alarmType: 'good-first-issue', alarmChannel: 'dingding'});
             });
         arr.push(res)
       }//repo循环结束
-
-    }
-    Promise.all(arr).then((results) => {
-      console.log("All scanned!");
-     dangerousIssueDAO.getMysqlDao().commitMysql();
-    });
+      const ownerGoodFirstIssueConfig = getConfig(null, config.orgRepoConfig[owner]['good-first-issue-notifier'], config.generalConfig['good-first-issue-notifier']);
+      await Promise.all(arr).then((results) => {
+        if(ownerText == null){
+          return
+        }
+        ownerText = `${owner}社区goodFirstIssue认领：` + ownerText
+        // 发送repo消息,atUid就是@某个人
+        ownerGoodFirstIssueConfig["channels"].forEach((ch) => {
+          if (ch["type"] === "dingtalk") {
+            sender.sendMarkdown(ch.urls, ownerText, ch.title, ch.atUid, ch.atAll);
+          } else {
+            console.error(`channel ${ch["type"]} not supported!`);
+          }
+        });
+      });
+    }// owner循环结束
+    console.log("All scanned!");
+    dangerousIssueDAO.getMysqlDao().commitMysql();
   },
 
   scanCheck:  function (config,since, to) {
@@ -164,19 +176,28 @@ const issueScanner = {
             let noDangerous = !resultsArray.some(result => result.isVeryDangerous);
             await livenessCheck(owner, repo, resultsArray).then(isSuccess => {
               let status = noDangerous || isSuccess
+              let mergeRepo = config.generalConfig.mergeRepo[`${owner}/${repo}`];
+              let ownerMerge=owner;
+              let repoMerge=repo;
+              if(mergeRepo != null){
+                let split = mergeRepo.split('/');
+                ownerMerge = split[0]
+                repoMerge = split[1]
+              }
+
               if (status) {
                 //检查通过
-                dangerousIssueDAO.insertLivenessCheck(owner, null);
+                dangerousIssueDAO.insertLivenessCheck(ownerMerge, null);
               } else {
                 //检查失败
-                dangerousIssueDAO.insertLivenessCheck(owner, repo);
+                dangerousIssueDAO.insertLivenessCheck(ownerMerge, repoMerge);
               }
               //触发报警数据埋点
-               dangerousIssueDAO.getMysqlDao().sendAlarmMysql({
+              dangerousIssueDAO.getMysqlDao().sendAlarmMysql({
                 scanFrom: since,
                 scanTo: to,
-                owner: owner,
-                repo: repo,
+                owner: ownerMerge,
+                repo: repoMerge,
                 issueNum: 0,
                 alarmContent: "",
                 alarmStatus: status ? 'success' : "fail",

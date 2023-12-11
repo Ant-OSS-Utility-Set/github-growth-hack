@@ -33,20 +33,19 @@ It can:
 
 Screenshots of the dashboard and reports:
 
-![](grafana.png)
+ <img src="grafana.png" width = "50%" height = "50%" alt="welcome" align=center />
 
-![excel](excel.png)
+ <img src="excel.png" width = "50%" height = "50%" alt="welcome" align=center />
 
-![](https://user-images.githubusercontent.com/26001097/156523792-34acd5ac-577e-4981-b026-3f26361e46db.png)
+2. Scan for long-unanswered issue and warn you
 
-2. Find those issues without any comments and warn you
+    Screenshots of the warnings:
 
-![](https://user-images.githubusercontent.com/26001097/157366957-6fb03357-97e0-47b3-80e5-e8b8c88ad96e.png)
+<img src="https://gw.alicdn.com/imgextra/i1/O1CN01fjClZg21nKqco7C6x_!!6000000007029-0-tps-1624-492.jpg" width = "50%" height = "50%" alt="welcome" align=center />
 
-Screenshots of the warnings:
-![](https://user-images.githubusercontent.com/26001097/156523399-c044b214-c454-46dd-a71f-77bde5b73121.png)
 
-![](https://user-images.githubusercontent.com/26001097/156515698-ebaf02ab-5ffe-4fb9-9201-a76e44274d3a.png)
+<img src="https://gw.alicdn.com/imgextra/i1/O1CN01udDSsg1jPN2LPshq6_!!6000000004540-0-tps-1172-688.jpg" width = "50%" height = "50%" alt="welcome" align=center />
+
 
 ## Usage
 
@@ -58,43 +57,9 @@ Screenshots of the warnings:
 git clone https://github.com/seeflood/github-growth-hack.git
 ```
 
-1. Modify the configuration options in `src/index.js`
-
-```javascript
-// Modify these configuration items as you like
-// 1. Your github API token
-// We use your token to invoke github graphql api to query some repo data and won't do any modification.
-// see https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#authenticating-with-graphql
-const token = ``;
-
-// 2. Time range.
-// modify it as you like
-// e.g.
-// let since = `2021-06-12T00:32:13Z`;
-// let since = utils.lastSunday();
-// let since = `2021-10-09T00:32:13Z`;
-let since = utils.sevenDaysBefore();
-// let to = utils.thisFriday23_59_59();
-let to = utils.today();
-
-// 3. Which repositries do you care about?
-// Parameters in the repos array are:
-// [owner, repo]
-let repos = [
-  ["mosn", "mosn"],
-  ["mosn", "layotto"],
-];
-
-// 4. (Optional) Send messages to dingtalk group
-const dingTalkGroupConfig = {
-  url: "",
-  keyword: "",
-  owners: new Map(),
-};
-
-dingTalkGroupConfig.owners.set("project name", "dingtalk uid");
-dingTalkGroupConfig.owners.set("layotto", "193555");
-```
+1. Create your configuration json file  in `github-growth-hack/configs/config.json`
+2. 
+   [config.json reference](config文件配置说明.md)
 
 2. Run it
 
@@ -118,7 +83,7 @@ npm run week
 
 ### Send issue warning to dingtalk group
 
-1. Modify the configuration options in `src/index.js`
+1. Modify your configuration json file  in `github-growth-hack/configs/config.json`
 
 2. Run `npm run scan`
 

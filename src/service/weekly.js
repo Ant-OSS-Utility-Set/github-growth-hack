@@ -229,22 +229,7 @@ function getNickName(repo, repoOption) {
 ) {
   // 遍历issuesToCheck
   for (let issue of issuesToCheck) {
-    let targetKey;
-    try {
-      if(typeof mergeFunc === 'string'){
-        targetKey =  mergeFunc;
-      }else if(typeof mergeFunc === 'function'){
-        // 调用mergeFunc函数，获取targetKey
-        targetKey =  mergeFunc(issue);
-      }else{
-        console.log("mergeFunction 不是标准格式")
-        return;
-      }
-    } catch (error) {
-      // 捕获错误，并打印错误信息
-      console.error("mergeFunc error: " + error);
-      return;
-    }
+    let targetKey = mergeFunc;
     // 打印出issue的html_url和targetKey
     console.log(issue.html_url + " should be merged into " + targetKey);
     // 如果targetKey为null或者repo2project.get(targetKey)为null，则跳过

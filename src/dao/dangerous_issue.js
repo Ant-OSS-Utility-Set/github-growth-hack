@@ -214,19 +214,19 @@ const dingTalkDao = {
   sendNoIssue: async function (owner, dingTalkGroupConfig) {
     let awards = [
       {
-        content: `${owner}目前没有舆情 issue ，大家回复很及时，奖励一人一辆特斯拉!\n`,
+        content: `${owner}社区目前没有舆情 issue ，大家回复很及时，奖励一人一辆特斯拉!\n`,
         img: "https://gw.alipayobjects.com/mdn/rms_6ac329/afts/img/A*PXPwR6je8-MAAAAAAAAAAAAAARQnAQ",
       },
       {
-        content: `${owner}目前没有舆情 issue ，大家回复很及时，奖励一人一辆 SpaceX 火箭!\n`,
+        content: `${owner}社区目前没有舆情 issue ，大家回复很及时，奖励一人一辆 SpaceX 火箭!\n`,
         img: "https://gw.alipayobjects.com/mdn/rms_6ac329/afts/img/A*J7MsQKCp-H8AAAAAAAAAAAAAARQnAQ",
       },
       {
-        content: `${owner}目前没有舆情 issue ，大家回复很及时，奖励一人一个 脑机接口!\n`,
+        content: `${owner}社区目前没有舆情 issue ，大家回复很及时，奖励一人一个 脑机接口!\n`,
         img: "https://img-blog.csdnimg.cn/img_convert/15b784912f4511cbb9d35bb2c1bf5e91.png",
       },
       {
-        content: `${owner}目前没有舆情 issue ，大家回复很及时，奖励一人一罐 可口可乐!\n`,
+        content: `${owner}社区目前没有舆情 issue ，大家回复很及时，奖励一人一罐 可口可乐!\n`,
         img: "https://gw.alipayobjects.com/mdn/rms_6ac329/afts/img/A*v6SsRKjmOWYAAAAAAAAAAAAAARQnAQ",
       },
     ];
@@ -389,7 +389,7 @@ const dingTalkDao = {
         body: JSON.stringify({
           msgtype: "markdown",
           markdown: {
-            title: nickName,
+            title: nickName+"issue",
             text: `![](${imageUrl}) \n`,
           },
           at: {

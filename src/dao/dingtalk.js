@@ -103,8 +103,8 @@ module.exports = {
     return dingTalkDao.send(groupUrls, content, title, atUid, isAtAll);
   },
   // 发送markdown消息
-  sendMarkdown: function (groupUrls, content, title, atUid, isAtAll) {
+  sendMarkdown: async function (groupUrls, content, title, atUid, isAtAll) {
     // 调用dingTalkDao的sendMarkdown方法，发送markdown消息
-    return dingTalkDao.sendMarkdown(groupUrls, content, title, atUid, isAtAll);
+    await dingTalkDao.sendMarkdown(groupUrls, content, title, atUid, isAtAll);
   },
 };
