@@ -389,7 +389,7 @@ const dingTalkDao = {
         body: JSON.stringify({
           msgtype: "markdown",
           markdown: {
-            title: nickName+"社区",
+            title: nickName+"issue",
             text: `![](${imageUrl}) \n`,
           },
           at: {
