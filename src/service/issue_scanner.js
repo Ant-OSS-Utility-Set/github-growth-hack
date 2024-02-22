@@ -188,7 +188,7 @@ const issueScanner = {
           resultsArray = resultsArray.filter(res => res.duration != null && res.duration < config.generalConfig.dangerousIssuesConfig.mustReplyInXDays)
           if (resultsArray.length > 0) {
             resultsArray.forEach((result) => {
-              dangerousIssueDAO.insert(result.duration, result.project, result.title, result.url, result.keyword);
+              dangerousIssueDAO.insert(result.duration, result.project, result.title, result.url, owner);
             });
           } else {
             dangerousIssueDAO.insert(null, null, null, null, owner)
