@@ -279,10 +279,6 @@ function filterOutDangerousIssues(issues, to,owner,repo) {
     // 判断issue是否早30天创建，如果是则直接返回
     // check baseline
     let createDay = moment(issue.createdAt, "YYYY-MM-DDTHH:mm:ssZ");
-    // const baseline = moment().subtract(mustReplyInXDays,'days')
-    // if (baseline != null && baseline.isAfter(createDay)) {
-    //   return;
-    // }
     // check duration
     let duration = moment(to).diff(createDay, "day");
     issue.duration = duration;

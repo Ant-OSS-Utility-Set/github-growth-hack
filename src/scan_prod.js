@@ -3,11 +3,13 @@ const { dispatch } = require("./dispatcher");
 //一个config配置文件，用户私有仓库配置，我们手动复制到放在服务器上面
 const config = require("../configs/config.json");
 const { configNames } = require("./const.js");
+const moment = require("moment/moment");
 
 
 // 2. Time range.
-let since = utils.sevenDaysBefore();
-let to = utils.today();
+// let since = utils.sevenDaysBefore();
+let since =    moment().subtract(16, "days").toISOString(true);
+let to = utils.today()
 
     //需要改的配置
 const env = "prod";
