@@ -19,7 +19,7 @@ dispatch(config,since, to);
 function devForTest(env,config) {
     if(env==='dev'){
         const dev = require("../configs/config-dev.json");
-        // config.generalConfig.mysqlConfig= {}
+        config.generalConfig.mysqlConfig= {}
         config.generalConfig.dingTalkGroupConfig=dev.dingTalkGroupConfig
         config.generalConfig['good-first-issue-notifier']=dev['good-first-issue-notifier']
         for (const owner in config.orgRepoConfig) {
