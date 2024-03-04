@@ -333,7 +333,7 @@ function withSpecialLabels(issue) {
 function isCommunityIssue_graphql(issue) {
   // 判断issue的authorAssociation是否不是MEMBER和OWNER
   return (
-    issue.authorAssociation != "MEMBER" && issue.authorAssociation != "OWNER"
+    issue.authorAssociation != "MEMBER" && issue.authorAssociation != "OWNER" && issue.authorAssociation != "COLLABORATOR"
   );
 }
 
