@@ -124,6 +124,11 @@ issue 被 assign 后，在 IM 群中提醒当事人。
 详见 https://github.com/mosn/layotto/issues/800
 
 如果开启该功能，good first issue 必须满足一定的label 规范、命名规范, 详见 https://mosn.io/layotto/#/zh/development/label-spec
+### 7. 接入其他IM
+
+- 代码：仿照dingtalk.js编写自己的xxxim.js，然后把自己的xxxim.js在src/dao/im.js里面导入。在接口里面根据im的配置type在if分支里面调用自己写的接口。
+- 配置：在config.json里面填写im的type为自己的im类型。
+
 ## 使用文档
 
 - [如何在钉钉群里添加“项目管理机器人”](pm_bot.md)
