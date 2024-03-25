@@ -4,7 +4,7 @@ const {
 } = require("../metrics/issues");
 const dangerousIssueDAO = require("../dao/dangerous_issue");
 const { weeklyScoreDAO } = require("../dao/weekly_score");
-const sender = require("../dao/dingtalk");
+const sender = require("../dao/im");
 const { configNames,getConfig } = require("../const.js");
 
 /**
@@ -62,27 +62,7 @@ const issueScanner = {
         // 扫描仓库中的 good first issue
         const res = listGoodFirstIssues(config.generalConfig.graphToken, owner, repo, since)
             .then(async function (issues) {
-              // The data structure looks like:
-              // {
-              //   easy: [],
-              //   medium: [
-              //     {
-              //       project: 'layotto',
-              //       title: 'Develop a new component for sms API; 为"短信 API" 开发新的组件',
-              //       url: 'https://github.com/mosn/layotto/issues/830',
-              //       labels: [Array]
-              //     }
-              //   ],
-              //   hard: [
-              //     {
-              //       project: 'layotto',
-              //       title: 'generate a cli tool for Layotto;  生成 Layotto 命令行工具',
-              //       url: 'https://github.com/mosn/layotto/issues/826',
-              //       labels: [Array]
-              //     }
-              //   ],
-              //   unknown: []
-              // }
+
 
               let text = `${owner}社区${repo}项目新增了几个 good first issue, 欢迎感兴趣的朋友认领! \n\r`;
 
