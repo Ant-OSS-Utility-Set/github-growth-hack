@@ -143,7 +143,7 @@ issue 被 assign 后，在 IM 群中提醒当事人。
   {
   "type": "dingtalk",
   "urls": [
-  "https://oapi.dingtalk.com/robot/send?access_token=66113ea1b10247d25149158fb4b765da6c3c57bddca2682215122cc205e2ac70"
+  "https://oapi.dingtalk.com/robot/send?access_token=your_token
   ],
   "title": "goodFirstIssue认领",
   "atUid": [],
