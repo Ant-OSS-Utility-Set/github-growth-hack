@@ -1,0 +1,66 @@
+{
+  "generalConfig": {
+    "graphToken": "your github token",
+    "mysqlConfig": {
+      "host": "your host",
+      "user": "user",
+      "password": "password",
+      "database": "database"
+    },
+    "liveness-check": {
+      "enable": true
+    },
+    "dangerousIssuesConfig": {
+      "shouldReplyInXDays": 5,
+      "mustReplyInXDays": 30,
+      "maxIssueNums": 3
+    },
+    "mergeRepo": {
+      "org/project": "org2/project2"
+    },
+    "good-first-issue-notifier": {
+      "enable": true,
+      "channels": [
+        {
+          "type": "dingtalk",
+          "urls": [""],
+          "title": "goodFirstIssue认领",
+          "atUid": [],
+          "atAll": true
+        }
+      ]
+    },
+    "dingTalkGroupConfig": {
+      "groups": [
+        {
+          "url": "",
+          "topicProjects": "*",
+          "topicTypesOnly": [
+            "liveness","issue"
+          ],
+          "issueWarningText": "辛苦尽快看下哈"
+        }
+      ],
+      "owners": {}
+    }
+  },
+  "orgRepoConfig": {
+    "yourorg": {
+      "good-first-issue-notifier": { "enable": false },
+      "liveness-check": { "enable": false },
+      "dingTalkGroupConfig": {
+        "groups": [
+          {
+            "url": "",
+            "topicProjects": "*",
+            "topicTypesOnly": ["issue"],
+            "issueWarningText": "辛苦尽快看下哈"
+          }
+        ]
+      }
+    },
+    "yourorg": {
+      "yourproject": { }
+    }
+  }
+}
