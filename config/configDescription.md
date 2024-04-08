@@ -54,9 +54,9 @@
       "enable": true, 
       "channels": [  
         {
-          "type": "dingtalk", 
+          "type": "IM类型", 
           "urls": [
-            "https://oapi.dingtalk.com/robot/send?access_token=xxxxx" 
+            "IM机器人url" 
           ],
           "title": "goodFirstIssue认领",
           "atUid": [],  
