@@ -143,7 +143,7 @@ issue 被 assign 后，在 IM 群中提醒当事人。
   {
   "type": "dingtalk",
   "urls": [
-  "https://oapi.dingtalk.com/robot/send?access_token=your_token
+  "https://oapi.dingtalk.com/robot/send?access_token=your_token"
   ],
   "title": "goodFirstIssue认领",
   "atUid": [],
@@ -152,6 +152,7 @@ issue 被 assign 后，在 IM 群中提醒当事人。
   ]
   }
  ```
+
 ## 使用文档
 
 - [如何在钉钉群里添加“项目管理机器人”](pm_bot.md)
