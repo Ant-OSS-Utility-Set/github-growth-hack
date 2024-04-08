@@ -9,7 +9,7 @@
      }
     -org级别：
         -owner1：{
-           "此owner里面的配置"
+           "此owner里面的配置"  /* aaa */
          }
            -repo1：{
             "此repo里面的配置"
