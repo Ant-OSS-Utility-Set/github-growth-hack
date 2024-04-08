@@ -130,29 +130,28 @@ issue 被 assign 后，在 IM 群中提醒当事人。
 ```javascript
  if(group['type']==='dingtalk'){
     return dingtalk.sendMarkdown(group,content,atUid,uidArr);
- }else{
-    // 其他IM接入示例
-    return  otherim.sendMarkdown(group,content,atUid,uidArr);
- }
-```
+  }else{
+  // 其他IM接入示例
+  return  otherim.sendMarkdown(group,content,atUid,uidArr);
+  }
+ ```
 - 配置：在config.json里面填写im的type为自己的im类型。
 ```json
-    "good-first-issue-notifier": {
-      "enable": true,
-      "channels": [
-        {
-          "type": "dingtalk",
-          "urls": [
-            "https://oapi.dingtalk.com/robot/send?access_token=66113ea1b10247d25149158fb4b765da6c3c57bddca2682215122cc205e2ac70"
-          ],
-          "title": "goodFirstIssue认领",
-          "atUid": [],
-          "atAll": true
-        }
-      ]
-    }
+  "good-first-issue-notifier": {
+  "enable": true,
+  "channels": [
+  {
+  "type": "dingtalk",
+  "urls": [
+  "https://oapi.dingtalk.com/robot/send?access_token=your_token
+  ],
+  "title": "goodFirstIssue认领",
+  "atUid": [],
+  "atAll": true
+  }
+  ]
+  }
  ```
- 
 ## 使用文档
 
 - [如何在钉钉群里添加“项目管理机器人”](pm_bot.md)
