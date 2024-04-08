@@ -32,7 +32,8 @@
     "graphToken": "不需要改",
     "mysqlConfig": { "不需要改" },
     "liveness-check": {
-      "enable": true --是否开启活跃度检查，默认开启
+      "enable": true <!-- 这里是注释，不会在页面上显示 -->
+--是否开启活跃度检查，默认开启
     },
     #危险issue的满足条件：满足条件的issue会触发钉钉issue告警
     "dangerousIssuesConfig": {
