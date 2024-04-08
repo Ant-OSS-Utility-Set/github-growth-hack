@@ -9,7 +9,7 @@
      }
     -org级别：
         -owner1：{
-           "此owner里面的配置"  /* aaa */
+           "此owner里面的配置" 
          }
            -repo1：{
             "此repo里面的配置"
@@ -38,7 +38,7 @@
  ``` json
 "generalConfig": {
     "graphToken": "不需要改",
-    "mysqlConfig": { "不需要改" },
+    "mysqlConfig": { "不需要改" }, /* aaa */
     "liveness-check": {
       "enable": true 
     },
