@@ -128,12 +128,12 @@ issue 被 assign 后，在 IM 群中提醒当事人。
 
 - 代码：仿照dingtalk.js编写自己的xxxim.js，然后把自己的xxxim.js在src/dao/im.js里面导入。在接口里面根据im的配置type在if分支里面调用自己写的接口。
 ```javascript
-    if(group['type']==='dingtalk'){
-        return dingtalk.sendMarkdown(group,content,atUid,uidArr);
-      }else{
-        ///// 其他IM接入示例
-       return  otherim.sendMarkdown(group,content,atUid,uidArr);
-      }
+ if(group['type']==='dingtalk'){
+    return dingtalk.sendMarkdown(group,content,atUid,uidArr);
+ }else{
+    // 其他IM接入示例
+    return  otherim.sendMarkdown(group,content,atUid,uidArr);
+ }
 ```
 - 配置：在config.json里面填写im的type为自己的im类型。
 ```json
