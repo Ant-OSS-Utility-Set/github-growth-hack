@@ -35,7 +35,7 @@
    -   dingTalkGroupConfig：危险issue（issue）和活跃度检查（liveness）的钉钉发送配置
 
 ## 配置详细说明
- ``` json
+ ``` 
 "generalConfig": {
     "graphToken": "不需要改",
     "mysqlConfig": { "不需要改" }, /* aaa */
