@@ -34,13 +34,13 @@
     "liveness-check": {
       "enable": true --是否开启活跃度检查，默认开启
     },
-    --危险issue的满足条件：满足条件的issue会触发钉钉issue告警
+    #危险issue的满足条件：满足条件的issue会触发钉钉issue告警
     "dangerousIssuesConfig": {
       "shouldReplyInXDays": 5,  -- 5天后还没有处理的issue
       "mustReplyInXDays": 30,  --  issue 开启时间到现在必须是30天内的
       "maxIssueNums": 3     --一个项目最多显示多少条，防止太多issue刷屏
     },
-     --  项目合并，注意：这个配置只能在generalConfig层级进行配置，如果有需要，直接在这里面加即可。
+     #  项目合并，注意：这个配置只能在generalConfig层级进行配置，如果有需要，直接在这里面加即可。
     "mergeRepo": {
       "layotto/java-sdk": "mosn/layotto"   -- 要合并的项目==>  合并到的项目
     },
