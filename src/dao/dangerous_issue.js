@@ -1,8 +1,9 @@
 const fs = require("fs");
+const moment = require("moment");
+const fetch = require("node-fetch");
 const config = require("../../configs/config.json");
 const {getConfig} = require("../const");
 const { getConn, query } = require("./mysql_conn");
-const { getImDao } = require("./im");
 const {utils} = require("../utils/time_utils");
 
 const mysqlDao = {
@@ -44,6 +45,7 @@ const mysqlDao = {
 
 const dingTalkDao = {
   issuesForDingTalk: new Map(),
+
   livenessCheck:  new Map(),
   start: function () { },
   // put the issue into the memory list
@@ -76,7 +78,7 @@ const dingTalkDao = {
   sendLiveness:async function(livenessCheckElement,owner,ownerDingTalkGroupConfig){
     if (livenessCheckElement > 0) {
       let livenessContent = this.concatLivenessContent(owner, livenessCheckElement, ownerDingTalkGroupConfig);
-      await getImDao.send(livenessContent, null, false, true, "liveness", ownerDingTalkGroupConfig);
+      await this.send(livenessContent, null, false, true, "liveness", ownerDingTalkGroupConfig);
     } else {
       await this.sendSuccessLivecheck(owner, ownerDingTalkGroupConfig)
     }
@@ -89,7 +91,7 @@ const dingTalkDao = {
       const ownerDingTalkGroupConfig = getConfig(null, config.orgRepoConfig[owner]['dingTalkGroupConfig'], config.generalConfig['dingTalkGroupConfig']);
       if (value.length > 0) {
         let issueContent = this.concatIssueContent(owner, value, ownerDingTalkGroupConfig);
-        await getImDao().send(issueContent, null, false, true, "issue", ownerDingTalkGroupConfig);
+        await this.send(issueContent, null, false, true, "issue", ownerDingTalkGroupConfig);
       } else {
         await this.sendNoIssue(owner, ownerDingTalkGroupConfig)
       }
@@ -207,24 +209,24 @@ const dingTalkDao = {
         `注：liveness check会检查每个项目的健康情况，如果满足下列条件会被归类为“腐烂级”项目：\n` +
         `- 存在大于30天未回复的 issue \n` +
         `- 连续4周活跃度小于20\n`;
-    await getImDao().send(content, null, false, false, "liveness", dingTalkGroupConfig);
+    await this.send(content, null, false, false, "liveness", dingTalkGroupConfig);
   },
   sendNoIssue: async function (owner, dingTalkGroupConfig) {
     let awards = [
       {
-        content: `${owner}目前没有舆情 issue ，大家回复很及时，奖励一人一辆特斯拉!\n`,
+        content: `${owner}社区目前没有舆情 issue ，大家回复很及时，奖励一人一辆特斯拉!\n`,
         img: "https://gw.alipayobjects.com/mdn/rms_6ac329/afts/img/A*PXPwR6je8-MAAAAAAAAAAAAAARQnAQ",
       },
       {
-        content: `${owner}目前没有舆情 issue ，大家回复很及时，奖励一人一辆 SpaceX 火箭!\n`,
+        content: `${owner}社区目前没有舆情 issue ，大家回复很及时，奖励一人一辆 SpaceX 火箭!\n`,
         img: "https://gw.alipayobjects.com/mdn/rms_6ac329/afts/img/A*J7MsQKCp-H8AAAAAAAAAAAAAARQnAQ",
       },
       {
-        content: `${owner}目前没有舆情 issue ，大家回复很及时，奖励一人一个 脑机接口!\n`,
+        content: `${owner}社区目前没有舆情 issue ，大家回复很及时，奖励一人一个 脑机接口!\n`,
         img: "https://img-blog.csdnimg.cn/img_convert/15b784912f4511cbb9d35bb2c1bf5e91.png",
       },
       {
-        content: `${owner}目前没有舆情 issue ，大家回复很及时，奖励一人一罐 可口可乐!\n`,
+        content: `${owner}社区目前没有舆情 issue ，大家回复很及时，奖励一人一罐 可口可乐!\n`,
         img: "https://gw.alipayobjects.com/mdn/rms_6ac329/afts/img/A*v6SsRKjmOWYAAAAAAAAAAAAAARQnAQ",
       },
     ];
@@ -232,10 +234,178 @@ const dingTalkDao = {
     let idx = Math.floor(Math.random() * awards.length);
     let content = awards[idx].content;
     let img = awards[idx].img;
-    await getImDao().send(content, null, false, false, "issue", dingTalkGroupConfig);
-    await getImDao().sendImage(img, null, false, false, "issue", owner, dingTalkGroupConfig);
-  }
+    await this.send(content, null, false, false, "issue", dingTalkGroupConfig);
+    await this.sendImage(img, null, false, false, "issue", owner, dingTalkGroupConfig);
+  },
+  /**
+   * 这里的owner等于owner好像
+   * @param content
+   * @param atUid
+   * @param isAtAll
+   * @param isNegative
+   * @param topicType
+   * @param dingTalkGroupConfig
+   */
+  send: async function (content, atUid, isAtAll, isNegative, topicType,dingTalkGroupConfig) {
+    const topicTypeLiveness = "liveness";
+    const topicTypeIssue = "issue";
+    const groups = dingTalkGroupConfig["groups"]
 
+    for (let group of groups) {
+      // 1.validate
+      // 检查url是否为空
+      if (group['url'] == null || group['url'].length === 0) {
+        console.log("DingTalk url is empty");
+        continue;
+      }
+      // check topic projects
+      // 检查group.topicProjects中是否包含project
+      // if (!this.interested(group['topicProjects'], project)) {
+      //   continue;
+      // }
+      // check topicTypesIgnore
+      // 检查group['topicTypesIgnore']是否为*或者是否等于topicType
+      if (this.isIgnoredTopicType(group['topicTypesIgnore'], topicType)) {
+        continue;
+      }
+      // check topicTypesOnly
+      // 检查group['topicTypesOnly']是否为*或者是否等于topicType
+      if (!this.interestedTopicType(group['topicTypesOnly'], topicType)) {
+        continue;
+      }
+      // check owner in content
+      // 检查content中是否有group.owner，没有则替换this.owner
+      let newContent = content;
+
+      // append text
+      // 添加链接文本
+      if (topicType === topicTypeIssue) {
+        if (isNegative) {
+          newContent += this.nullToEmpty(group['issueWarningText']);
+        } else {
+          //没有issue，不会发消息，这个实际没有用到
+          newContent += this.nullToEmpty(group['issueCongratulationText']);
+        }
+      } else if (topicType === topicTypeLiveness) {
+        if (isNegative) {
+          newContent += this.nullToEmpty(group['livenessWarningText']);
+        } else {
+          newContent += this.nullToEmpty(group['livenessCongratulationText']);
+        }
+      }
+      let uidArr = [];
+      if (atUid != null) {
+        uidArr = atUid;
+      }
+      // 2. send request
+      //发送请求
+      return fetch(group.url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          at: {
+            atMobiles: [""],
+            atUserIds: uidArr,
+            isAtAll: isAtAll,
+          },
+          text: {
+            content: newContent,
+          },
+          msgtype: "text",
+          title: ``,
+        }),
+      })
+        // 3. parse
+        .then((res) => {
+          return res.json();
+        })
+        .then((json) => {
+          console.log( `发送钉钉:${newContent}结果：`)
+          console.log(json)
+        });
+    }
+  },
+  nullToEmpty(str) {
+    // 如果str为null，则返回空字符串
+    if (str == null) {
+      return "";
+    }
+    // 否则返回str
+    return str;
+  },
+  interested: function (topicProjects, project) {
+    // 如果topicProjects为空或者长度为0或者topicProjects为*
+    if (
+      topicProjects == null ||
+      topicProjects.length == 0 ||
+      topicProjects == "*"
+    ) {
+      // 返回true
+      return true;
+    }
+    // 如果topicProjects中包含project
+    if (topicProjects.indexOf(project) >= 0) {
+      // 返回true
+      return true;
+    }
+    // 否则返回false
+    return false;
+  },
+  sendImage: async function (imageUrl, atUid, isAtAll, isNegative, topicType,owner,option) {
+    const groups = option["groups"]
+    for (let group of groups) {
+      // 1.validate
+      if (group.url == null || group.url.length == 0) {
+        console.log("send image:DingTalk url is empty");
+        continue;
+      }
+      // check topic project
+      // if (!this.interested(group['topicProjects'], project)) {
+      //   continue;
+      // }
+      // check topicTypesIgnore
+      if (this.isIgnoredTopicType(group['topicTypesIgnore'], topicType)) {
+        continue;
+      }
+      // check topicTypesOnly
+      if (!this.interestedTopicType(group['topicTypesOnly'], topicType)) {
+        continue;
+      }
+      // check owner in content
+      let nickName = owner;
+      if (group['nickName'] != null) {
+        nickName = group['nickName'];
+      }
+      // 2. send request
+      return fetch(group.url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          msgtype: "markdown",
+          markdown: {
+            title: nickName+"issue  SOFAStack",
+            text: `![](${imageUrl}) \n`,
+          },
+          at: {
+            atMobiles: [""],
+            atUserIds: [atUid],
+            isAtAll: isAtAll,
+          },
+        }),
+      })
+        // 3. parse
+        .then((res) => {
+          return res.json();
+        })
+        .then((json) => console.log("发送图片结果：",json));
+    }
+  },
 };
 
 const fsDAOImpl = {
@@ -322,7 +492,9 @@ module.exports = {
     fsDAOImpl.commit();
     dingTalkDao.commit();
   },
-
+  getDingTalkDao() {
+    return dingTalkDao;
+  },
   getMysqlDao(){
     return mysqlDao;
   }

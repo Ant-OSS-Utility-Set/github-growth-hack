@@ -72,21 +72,21 @@ async function listOpenIssues(token, owner, repo) {
       },
     }),
   })
-    .then((res) => {
-      // 返回响应的json数据
-      return res.json();
-    })
-    .then((d) => {
-      // 返回仓库的open issues列表
-      return d.data.repository.issues;
-    });
+      .then((res) => {
+        // 返回响应的json数据
+        return res.json();
+      })
+      .then((d) => {
+        // 返回仓库的open issues列表
+        return d.data.repository.issues;
+      });
 }
 
 // async函数，用于调用GitHub API，获取好的第一个问题
 async function listGoodFirstIssues(token, owner, repo, createdSince) {
   // 打印出调用GitHub API的信息
   console.log(
-    "Invoking github API to fetch good first issues. owner: " +
+      "Invoking github API to fetch good first issues. owner: " +
       owner +
       " repo:" +
       repo +
@@ -155,14 +155,14 @@ async function listGoodFirstIssues(token, owner, repo, createdSince) {
       },
     }),
   })
-    .then((res) => {
-      return res.json();
-    })
-    .then((d) => {
-      return d.data.repository.issues;
-    })
-    .then((issues) => filterIssuesByCreatedSince(issues, createdSince))
-    .then((issues) => groupByDifficulty(issues));
+      .then((res) => {
+        return res.json();
+      })
+      .then((d) => {
+        return d.data.repository.issues;
+      })
+      .then((issues) => filterIssuesByCreatedSince(issues, createdSince))
+      .then((issues) => groupByDifficulty(issues));
 }
 
 // 遍历issues数组，根据标签名将问题分别放入不同的数组中
@@ -176,7 +176,7 @@ function groupByDifficulty(issues) {
   issues.forEach((issue) => {
     for (const idx in issue.labels) {
       const labelName = issue.labels[idx];
-      
+
       // 遍历每一个问题，根据标签名将其放入不同的数组中
       if (labelName == "easy") {
         result["easy"].push(issue);
@@ -237,8 +237,8 @@ function filterIssuesByCreatedSince(issues, createdSince) {
 async function listDangerousOpenIssues(token, owner, repo, to) {
   // 调用listOpenIssues函数，获取所有
   return listOpenIssues(token, owner, repo).then((issues) =>
-    // 调用filterOutDangerousIssues函数，过滤出危险
-    filterOutDangerousIssues(issues, to,owner,repo)
+      // 调用filterOutDangerousIssues函数，过滤出危险
+      filterOutDangerousIssues(issues, to,owner,repo)
   );
 }
 
@@ -261,7 +261,7 @@ function filterOutDangerousIssues(issues, to,owner,repo) {
       return;
     }
 
-    // 判断是否有成员回复了该信息，否则直接返回 
+    // 判断是否有成员回复了该信息，否则直接返回
     if (someMemberHasReplied_graphql(issue)) {
       return;
     }
@@ -318,10 +318,10 @@ function withSpecialLabels(issue) {
   // 遍历issue的labels.edges，检查是否有"help wanted"，"good first issue"，"WIP"，"wip"中的一个
   issue.labels.edges.forEach((labelNode) => {
     if (
-      labelNode.node.name == "help wanted" ||
-      labelNode.node.name == "good first issue" ||
-      labelNode.node.name == "WIP" ||
-      labelNode.node.name == "wip"
+        labelNode.node.name == "help wanted" ||
+        labelNode.node.name == "good first issue" ||
+        labelNode.node.name == "WIP" ||
+        labelNode.node.name == "wip"
     ) {
       found = true;
     }
@@ -333,7 +333,7 @@ function withSpecialLabels(issue) {
 function isCommunityIssue_graphql(issue) {
   // 判断issue的authorAssociation是否不是MEMBER和OWNER
   return (
-    issue.authorAssociation != "MEMBER" && issue.authorAssociation != "OWNER" && issue.authorAssociation != "COLLABORATOR"
+      issue.authorAssociation != "MEMBER" && issue.authorAssociation != "OWNER" && issue.authorAssociation != "COLLABORATOR"
   );
 }
 
@@ -341,14 +341,14 @@ function someMemberHasReplied_graphql(issue) {
   // 遍历issue的comments.nodes
   for (let comment of issue.comments.nodes) {
     // 如果comment的作者和issue的作者相同，则跳过
-    if (comment.author.login == issue.author.login) {
+    if (issue.author!=null && comment.author !=null && comment.author.login == issue.author.login) {
       continue;
     }
     // 如果comment的作者和issue的作者关系是MEMBER、OWNER、CONTRIBUTOR，则返回true
     if (
-      comment.authorAssociation == "MEMBER" ||
-      comment.authorAssociation == "OWNER" ||
-      comment.authorAssociation == "CONTRIBUTOR"
+        comment.authorAssociation == "MEMBER" ||
+        comment.authorAssociation == "OWNER" ||
+        comment.authorAssociation == "CONTRIBUTOR"
     ) {
       return true;
     }

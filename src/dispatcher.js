@@ -3,8 +3,6 @@ const { monthly } = require("./service/monthly");
 const { issueScanner } = require("./service/issue_scanner");
 const { setConfig, getConn} = require("./dao/mysql_conn");
 
-const configNames = ['liveness-check','good-first-issue-notifier','mergeRepo','dangerousIssuesConfig','dingTalkGroupConfig']
-
 // 定义一个函数dispatch，用于调度
 function  dispatch(config,since,to)
 {
