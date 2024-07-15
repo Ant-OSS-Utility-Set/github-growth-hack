@@ -276,6 +276,11 @@ function filterOutDangerousIssues(issues, to,owner,repo) {
       return;
     }
 
+    //判断是否有协作者评论，如果有直接返回
+    if(hasCollaboratorComment(issue)){
+      return;
+    }
+
     // 判断issue是否早30天创建，如果是则直接返回
     // check baseline
     let createDay = moment(issue.createdAt, "YYYY-MM-DDTHH:mm:ssZ");
@@ -357,6 +362,24 @@ function someMemberHasReplied_graphql(issue) {
   return false;
 }
 
+function hasCollaboratorComment(issue) {
+  // 遍历issue的comments.nodes
+  for (let comment of issue.comments.nodes) {
+    // 如果comment的作者和issue的作者相同，则跳过
+    if (issue.author!=null && comment.author !=null && comment.author.login == issue.author.login) {
+      continue;
+    }
+    // 如果comment的作者和issue的作者关系是COLLABORATOR，则返回true
+    if (
+        comment.authorAssociation == "COLLABORATOR"
+    ) {
+      return true;
+    }
+  }
+  // 否则返回false
+  return false;
+
+}
 module.exports = {
   // 列出OpenIssues
   listOpenIssues: listOpenIssues,
