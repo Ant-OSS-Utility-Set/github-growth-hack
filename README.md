@@ -137,7 +137,8 @@ issue 被 assign 后，在 IM 群中提醒当事人。
 ```
 - 配置：在config.json里面填写im的type为自己的im类型。
 ```json
-    "good-first-issue-notifier": {
+
+ "good-first-issue-notifier": {
 "enable": true,
 "channels": [
 {
