@@ -1,6 +1,6 @@
-const sender = require("./dao/im");
+const sender = require("./dao/dingtalk");
 
-sender.getImDao().sendMarkdown(
+sender.sendMarkdown(
   [
     // The webhook url of your dingtalk bot. For example:
     "https://oapi.dingtalk.com/robot/send?access_token=111111",

@@ -1,7 +1,6 @@
 
 //这个是固定写死的。
-const configNames = ['liveness-check','good-first-issue-notifier','mergeRepo','dangerousIssuesConfig','dingTalkGroupConfig']
-
+const configNames = ['liveness-check','good-first-issue-notifier','issue-notifier','mergeRepo','dangerousIssuesConfig','dingTalkGroupConfig']
 /**
  * 按照优先级获取配置
  * @param repoConfig
